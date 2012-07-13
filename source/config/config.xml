@@ -1,0 +1,59 @@
+<Configuration log="yes">
+    <Server port="80"/>
+    <Pipeline name="Transmitter">
+        <DicomImportService
+            calledAETTag="00120010"
+            class="org.rsna.ctp.stdstages.DicomImportService"
+            logConnections="rejected"
+            name="DicomImportService"
+            port="1081"
+            quarantine="quarantines/Transmitter/DicomImportService"
+            root="roots/Transmitter/DicomImportService"/>
+        <DicomAnonymizer
+            class="org.rsna.ctp.stdstages.DicomAnonymizer"
+            lookupTable="scripts/lookup-table.properties"
+            name="DicomAnonymizer"
+            quarantine="quarantines/Transmitter/DicomAnonymizer"
+            root="roots/Transmitter/DicomAnonymizer"
+            script="scripts/Transmitter.script"/>
+        <FileStorageService
+            class="org.rsna.ctp.stdstages.FileStorageService"
+            fsNameTag="00120010"
+            name="FileStorageService"
+            port="1085"
+            quarantine="quarantines/Transmitter/FileStorageService"
+            root="roots/Transmitter/FileStorageService"/>
+    </Pipeline>
+    <Pipeline name="Receiver">
+		<PollingXDSImportService
+			name="PollingXDSImportService-RR"
+			class="org.rsna.isn.ctp.xds.receiver.PollingXDSImportService"
+			root="roots/Receiver/PollingXDSImportService-RR"
+			interval="60"
+			rad69URL="https://clearinghouse.lifeimage.com/ImagingDocumentSource_Service?wsdl"
+			registryURL="https://clearinghouse.lifeimage.com/services/xdsregistryb"
+			repositoryURL="https://clearinghouse.lifeimage.com/services/xdsrepositoryb"
+			repositoryUniqueID="rsna.domain.repository"
+			assigningAuthorityUniversalID="1.3.6.1.4.1.19376.2.840.1.1.1.1"
+			assigningAuthorityUniversalIDType="ISO"
+			homeCommunityID="rsna.domain&lt;/HomeCommunityId"
+			keystore="keystore.jks"
+			keystorepassword="edge1234"
+			truststore="truststore.jks."
+			truststorepassword="edge1234"
+			siteID="6cc876e0254492ae2a693e6babfc1b0dc9b42bc8bf3cc4e1d2b0f09d5eb2a3b1"
+			imagesPerRequest="100"
+			servletContext="xds" />
+        <Processor
+            name="ObjectLogger-RR"
+            class="org.rsna.ctp.stdstages.ObjectLogger"
+            interval="1"
+            verbose="yes" />
+        <FileStorageService
+            class="org.rsna.ctp.stdstages.FileStorageService"
+            name="FileStorageService"
+            port="1086"
+            quarantine="quarantines/Receiver/FileStorageService"
+            root="roots/Receiver/FileStorageService"/>
+   </Pipeline>
+</Configuration>
