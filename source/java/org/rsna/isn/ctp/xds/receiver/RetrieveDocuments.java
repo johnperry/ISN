@@ -121,10 +121,10 @@ public class RetrieveDocuments {
                     String submissionSetID = (String) ssItr.next();
                     //if the submissionID has been retrieved, then go to next one
                     if (docsetDB.contains(submissionSetID)) {
-                        logger.info("SubmissionSetID#" + submissionSetID + " had been retrieved.");
+                        logger.info("SubmissionSetID " + submissionSetID + " has already been retrieved.");
                     }
                     else {
-                        logger.info("Get documents for submissionSetID#" + submissionSetID);
+                        logger.info("Get documents for submissionSetID " + submissionSetID);
 
                         //get all documents under this submissionSetID and store in tmp folder
                         Iterator<String> docItr = docList.get(submissionSetID).iterator();
@@ -258,7 +258,7 @@ public class RetrieveDocuments {
                         try {
                             dsResponse = imagingDocumentSourceRetrieveImagingDocumentSet(dsRequest);
                         } catch (Exception e) {
-                            logger.info("No image returned for studyUID " + studyInstanceUID,e);
+                            logger.info("No images returned for studyUID " + studyInstanceUID,e);
                         }
 
                         logger.info("...did the Rad69");
@@ -273,13 +273,13 @@ public class RetrieveDocuments {
 
                             String err = errList.getHighestSeverity();
                             System.out.println("NO DOCUMENTS FOUND " + status);
-                            logger.info("registry respose for studyUID#" + studyInstanceUID + " is " + status);
+                            logger.info("registry response for studyUID " + studyInstanceUID + " = " + status);
                         }
                         else {
                             numOfDocs = responseList.size();
                             totalDocs += numOfDocs;
                             System.out.println("Number of docs: " + numOfDocs);
-                            logger.info("Number of images retuened for studyUID#" + studyInstanceUID + " is " + numOfDocs);
+                            logger.info("Number of images returned for studyUID " + studyInstanceUID + " = " + numOfDocs);
 
                             documentResponse = new DocumentResponse();
                             for (int i = 0; i < numOfDocs; i++) {

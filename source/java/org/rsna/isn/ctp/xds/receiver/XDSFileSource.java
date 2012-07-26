@@ -48,7 +48,7 @@ public class XDSFileSource {
 		File dbdir = new File(dir, "database");
 		docsetDB = new DocSetDB(dbdir);
 
-		queue = new File(dir,"queue");
+		queue = new File(dir, "queue");
 		queue.mkdirs();
 
 		//Get the site ID that identifies the site to the clearinghouse
@@ -78,6 +78,7 @@ public class XDSFileSource {
 			File[] files = queue.listFiles();
 			if (files.length == 0) {
 				//get KOS and report for studies under this siteID
+				logger.info("------------------------------------------------------------");
 				docInfoList = retrieveDocuments.getSubmissionSets();
 
 				//get images for each study
@@ -87,6 +88,7 @@ public class XDSFileSource {
 					numOfDocs += retrieveDocuments.getStudy(docInfo);
 					logger.info("...done with "+docInfo.getDocumentUniqueID());
 				}
+				logger.info("------------------------------------------------------------");
 
 				if (numOfDocs > 0){
 					files = queue.listFiles();
