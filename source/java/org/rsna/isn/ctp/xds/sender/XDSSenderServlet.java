@@ -103,7 +103,7 @@ public class XDSSenderServlet extends Servlet {
 	public void doPost(HttpRequest req, HttpResponse res) throws Exception {
 
 		//Only accept connections from users with the update privilege
-		if (!req.userHasRole("update")) { res.redirect("/query"); return; }
+		if (!req.userHasRole("update")) { res.redirect("/"); return; }
 
 		//Reload the page so the user can see what he did.
 		boolean isEdgeServer = req.getParameter("ui","").equals("ES");

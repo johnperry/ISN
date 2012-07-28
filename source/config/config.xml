@@ -1,5 +1,6 @@
 <Configuration log="yes">
     <Server port="80"/>
+    <!--
     <Pipeline name="Transmitter">
         <DicomImportService
             calledAETTag="00120010"
@@ -24,6 +25,7 @@
             quarantine="quarantines/Transmitter/FileStorageService"
             root="roots/Transmitter/FileStorageService"/>
     </Pipeline>
+    -->
     <Pipeline name="Receiver">
 		<PollingXDSImportService
 			name="PollingXDSImportService-RR"
@@ -39,7 +41,7 @@
 			homeCommunityID="rsna.domain&lt;/HomeCommunityId"
 			keystore="keystore.jks"
 			keystorepassword="edge1234"
-			truststore="truststore.jks."
+			truststore="truststore.jks"
 			truststorepassword="edge1234"
 			siteID="6cc876e0254492ae2a693e6babfc1b0dc9b42bc8bf3cc4e1d2b0f09d5eb2a3b1"
 			imagesPerRequest="100"

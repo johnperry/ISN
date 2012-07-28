@@ -29,7 +29,7 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 
 	XDSStudyCache cache = null;
 	String servletContext = "";
-	long minAge = 0;
+	long minAge = 300;
 	int count = 0;
 	long timeDepth = 0;
 	String objectCacheID = "";
@@ -47,11 +47,10 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		if (root == null) logger.error(name+": No root directory was specified.");
 		else root.mkdirs();
 		servletContext = element.getAttribute("servletContext").trim();
-		minAge = StringUtil.getLong(element.getAttribute("minAge")) * 1000;
+		if (servletContext.equals("")) servletContext = "XDSSender";
+		minAge = Math.max( StringUtil.getLong(element.getAttribute("minAge")), minAge ) * 1000;
 		timeDepth = StringUtil.getLong(element.getAttribute("timeDepth"));
 		String objectCacheID = element.getAttribute("cacheID").trim();
-
-		if (servletContext.equals("")) servletContext = "XDSSender";
 		cache = XDSStudyCache.getInstance(servletContext, root);
 
 		deleteOnTransmission = !element.getAttribute("deleteOnTransmission").equals("no");
@@ -122,10 +121,14 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 			super(servletContext + "-monitor");
 		}
 		public void run() {
-			cache.checkOpenStudies(System.currentTimeMillis() - minAge);
-			if (deleteOnTransmission) {
-				//Keep transmitted studies for 1 hour, just so the user can see that they went
-				cache.deleteTransmittedStudies(System.currentTimeMillis() - 60 * 60 * 1000);
+			while (!stop) {
+				cache.checkOpenStudies(System.currentTimeMillis() - minAge);
+				if (deleteOnTransmission) {
+					//Keep transmitted studies for 1 hour, just so the user can see that they went
+					cache.deleteTransmittedStudies(System.currentTimeMillis() - 60 * 60 * 1000);
+				}
+				try { Thread.sleep(minAge); }
+				catch (Exception ignore) { }
 			}
 		}
 	}

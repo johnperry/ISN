@@ -80,6 +80,9 @@ public class XDSStudyCache {
 	 * are completed before returning.
 	 */
 	public boolean isClosed() {
+		if (!database.isClosed()) return false;
+
+		//TODO: check whether anything is in transit.
 		return true; //******************************** TEST
 	}
 
@@ -104,8 +107,7 @@ public class XDSStudyCache {
 		//Note that if the phiObject is null (say, because the configuation
 		//is incorrect or because the stage is intentionally being used to
 		//export objects containing PHI), we use the anonymized values
-		//in the database. This causes no problems for the program, but
-		//it might make it harder for the user to know which study is which.
+		//in the database. This causes no problems for the program.
 		FileObject fo = (phiObject != null) ? phiObject : fileObject;
 		String studyUID = fo.getStudyInstanceUID();
 		String dirname = studyUID.replaceAll("[\\\\/\\s]", "_").trim();
@@ -134,14 +136,24 @@ public class XDSStudyCache {
 		database.put(study);
 	}
 
+	/**
+	 * Get the number of studies that have the XDSStudyStatus COMPLETE.
+	 */
 	public int getCompleteStudyCount() {
 		return database.getCompleteStudyCount();
 	}
 
+	/**
+	 * Get the total number of studies in the database.
+	 */
 	public int getStudyCount() {
 		return database.getStudyCount();
 	}
 
+	/**
+	 * Get the database entries for studies that are either OPEN or COMPLETE,
+	 * sorted on PatientID.
+	 */
 	public Document getActiveStudiesXML() {
 		try {
 			Document doc = XmlUtil.getDocument();
@@ -159,6 +171,10 @@ public class XDSStudyCache {
 		}
 	}
 
+	/**
+	 * Get the database entry for a study in XML format.
+	 * @param studyUID the StudyInstanceUID of the study.
+	 */
 	public Document getStudyXML(String studyUID) {
 		try {
 			Document doc = XmlUtil.getDocument();
@@ -176,6 +192,11 @@ public class XDSStudyCache {
 		}
 	}
 
+	/**
+	 * Change the status of all studies which have the XDSStudyStatus OPEN
+	 * and which are older than a specified time.
+	 * @param time the latest lastModifiedTime of a study which is to be modified.
+	 */
 	public void checkOpenStudies(long time) {
 		XDSStudy[] studies = database.getStudies(XDSStudyStatus.OPEN);
 		for (XDSStudy study : studies) {
@@ -186,6 +207,11 @@ public class XDSStudyCache {
 		}
 	}
 
+	/**
+	 * Remove all studies which have the XDSStudyStatus SUCCESS
+	 * and are older than a specified time.
+	 * @param time the latest lastModifiedTime of a study which is to be removed.
+	 */
 	public void deleteTransmittedStudies(long time) {
 		XDSStudy[] studies = database.getStudies(XDSStudyStatus.SUCCESS);
 		for (XDSStudy study : studies) {

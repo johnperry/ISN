@@ -164,6 +164,30 @@ public class XDSDatabase {
 	}
 
 	/**
+	 * Get the number of studies that are INTRANSIT.
+	 */
+	public synchronized int getInTransitStudyCount() {
+		try {
+			XDSStudy study;
+			String key;
+			int count = 0;
+			FastIterator it = studies.keys();
+			while ( (key = (String)it.next()) != null ) {
+				study = (XDSStudy)studies.get(key);
+				XDSStudyStatus status = study.getStatus();
+				if (status.equals(XDSStudyStatus.INTRANSIT)) {
+					count++;
+				}
+			}
+			return count;
+		}
+		catch (Exception ex) {
+			logger.warn("Unable to count the studies with status INTRANSIT");
+			return 0;
+		}
+	}
+
+	/**
 	 * Get the total number of studies that are in the database.
 	 */
 	public synchronized int getStudyCount() {
@@ -195,6 +219,14 @@ public class XDSDatabase {
 			}
 			catch (Exception ignore) { }
 		}
+	}
+
+	/**
+	 * Indicate whether the database is closed.
+	 * return true if the database is closed; false otherwise.
+	 */
+	public synchronized boolean isClosed() {
+		return (recman == null);
 	}
 
 	//Load the database from the JDBM files, creating the JDBM files if necessary.
