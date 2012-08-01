@@ -182,6 +182,8 @@ public class RetrieveDocuments {
         //One study per input
         int numOfDocs = 0;
         int totalDocs = 0;
+        int imageCounter = 0;
+        int imagesOfStudy = 0;
 
         DataHandler dh;
         FileOutputStream fos;
@@ -239,78 +241,88 @@ public class RetrieveDocuments {
                     documentRequestList = seriesRequest.getDocumentRequest();
                     sopInstanceUIDList = (ArrayList<String>) docInfo.getImages().get(seriesInstanceUID);
                     if (sopInstanceUIDList != null) {
+                        int imagesBySeries = sopInstanceUIDList.size();
+                        imagesOfStudy += imagesBySeries;
+                        int totalCounter = 0;
+                        int requestCounter = 0;
                         Iterator imagesItr = sopInstanceUIDList.iterator();
+                        /*
+                         * Send request with X number of images each time                         *
+                         */
                         while (imagesItr.hasNext()){
                             documentUniqueId = (String) imagesItr.next();
+                            totalCounter = totalCounter + 1;
+                            requestCounter = requestCounter + 1;
+
+                            /*
+                             * Add image into dsRequest/studyRequestList/seriesRequestList/documentRequestList
+                             * Send the request when accumulate X number of images
+                             * After send, clear the documentRequestList
+                             */
                             docRequest = new DocumentRequest();
                             docRequest.setDocumentUniqueId(documentUniqueId);
                             docRequest.setHomeCommunityId(XDSConfiguration.getInstance().homeCommunityID);
                             docRequest.setRepositoryUniqueId(XDSConfiguration.getInstance().repositoryUniqueID);
                             documentRequestList.add(docRequest);
 
-                        }
+                            if (requestCounter >= XDSConfiguration.getInstance().imagesPerRequest || totalCounter >= imagesBySeries)
+                            {
+                               /*
+                                * Generate Rad69 response meta data dsResponse
+                                * Send the request and save the retrieved images
+                                */
+                                //dsResponse = new RetrieveDocumentSetResponseType();
+                                dsResponse = imagingDocumentSourceRetrieveImagingDocumentSet(dsRequest);
+                                responseList = dsResponse.getDocumentResponse();
 
-                        logger.info("About to do the Rad69");
-
-                        //Generate Rad69 response meta data dsResponse
-                        dsResponse = new RetrieveDocumentSetResponseType();
-                        logger.info("RetrieveDocumentSetResponseType instantiated; about to call imagingDocumentSourceRetrieveImagingDocumentSet");
-                        try {
-                            dsResponse = imagingDocumentSourceRetrieveImagingDocumentSet(dsRequest);
-                        } catch (Exception e) {
-                            logger.info("No images returned for studyUID " + studyInstanceUID,e);
-                        }
-
-                        logger.info("...did the Rad69");
-
-                        //Parse Rad69 response
-                        responseList = dsResponse.getDocumentResponse();
-                        errList = new RegistryErrorList();
-
-                        if (responseList.isEmpty()) {
-                            status = dsResponse.getRegistryResponse().getStatus();
-                            errList = dsResponse.getRegistryResponse().getRegistryErrorList();
-
-                            String err = errList.getHighestSeverity();
-                            System.out.println("NO DOCUMENTS FOUND " + status);
-                            logger.info("registry response for studyUID " + studyInstanceUID + " = " + status);
-                        }
-                        else {
-                            numOfDocs = responseList.size();
-                            totalDocs += numOfDocs;
-                            System.out.println("Number of docs: " + numOfDocs);
-                            logger.info("Number of images returned for studyUID " + studyInstanceUID + " = " + numOfDocs);
-
-                            documentResponse = new DocumentResponse();
-                            for (int i = 0; i < numOfDocs; i++) {
-                                documentResponse = responseList.get(i);
-                                //String cID = documentresponse.getHomeCommunityId();
-                                byte[] document = documentResponse.getDocument();
-
-                                DataSource dataSource = new ByteArrayDataSource(document, "application/octet-stream");
-                                dh = new DataHandler(dataSource);
-
-                                String filename = documentResponse.getDocumentUniqueId();
-                                File dcmFile = null;
-                                try {
-                                    dcmFile = new File(tmp, filename + ".dcm");
-                                } catch (Exception e) {
-                                    logger.error("Error save file for studyUID#" + studyInstanceUID, e);
+                                if (responseList.isEmpty()) {
+                                    status = dsResponse.getRegistryResponse().getStatus();
+                                    System.out.println("NO DOCUMENTS FOUND " + status);
+                                    logger.info("registry respose for this query is " + status);
                                 }
+                                else
+                                {
+                                    int returnedDocs = responseList.size();
+                                    imageCounter += returnedDocs;
 
-                                fos = new FileOutputStream(dcmFile);
-                                dh.writeTo(fos);
-                                fos.close();
+                                    documentResponse = new DocumentResponse();
+                                    for (int i = 0; i < returnedDocs; i++) {
+                                        documentResponse = responseList.get(i);
+                                        byte[] document = documentResponse.getDocument();
+
+                                        DataSource dataSource = new ByteArrayDataSource(document, "application/octet-stream");
+                                        dh = new DataHandler(dataSource);
+
+                                        String filename = documentResponse.getDocumentUniqueId();
+                                        File dcmFile = null;
+                                        try {
+                                            dcmFile = new File(tmp, filename + ".dcm");
+                                        } catch (Exception e) {
+                                            logger.error("Error save file for studyUID#" + studyInstanceUID, e);
+                                        }
+
+                                        fos = new FileOutputStream(dcmFile);
+                                        dh.writeTo(fos);
+                                        fos.close();
+                                    }
+
+                                    /*
+                                     * Clean up the request counter and image request list
+                                     */
+                                    requestCounter = 0;
+                                    documentRequestList.clear();
+                                }
                             }
                         }
-                    }
-                }
+					}
+				}
+
             }
             //RegistryResponseType registryResponse = new RegistryResponseType();
         } catch (Exception e) {
             logger.error("getStudy Error for["+docInfo.getStudyInstanceUID()+"]:"+e.getMessage(),e);
         }
-        return totalDocs;
+        return imagesOfStudy;
     }
 
     /**
@@ -326,17 +338,6 @@ public class RetrieveDocuments {
             logger.error("Fail to move file to queue:" + e.getMessage());
         }
     }
-
-    /*
-    13:42:51 INFO  [RetrieveDocuments] About to do the Rad69
-	13:42:51 INFO  [RetrieveDocuments] RetrieveDocumentSetResponseType instantiated; about to call imagingDocumentSourceRetrieveImagingDocumentSet
-	13:43:30 INFO  [RetrieveDocuments] About to instantiate MTOMFeature
-	13:43:30 INFO  [RetrieveDocuments] About to call getImagingDocumentSourcePortSoap12
-	13:46:10 INFO  [RetrieveDocuments] About to call getRequestContext
-	13:46:10 INFO  [RetrieveDocuments] About to call imagingDocumentSourceRetrieveImagingDocumentSet
-	13:46:15 INFO  [RetrieveDocuments] ...back from imagingDocumentSourceRetrieveImagingDocumentSet
-	13:46:15 INFO  [RetrieveDocuments] ...did the Rad69
-	*/
 
     private RetrieveDocumentSetResponseType imagingDocumentSourceRetrieveImagingDocumentSet(org.rsna.isn.ctp.xds.rad69.RetrieveImagingDocumentSetRequestType body) {
         RetrieveDocumentSetResponseType imagingDocumentSet = null;

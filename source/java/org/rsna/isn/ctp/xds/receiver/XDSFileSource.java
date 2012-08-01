@@ -46,7 +46,7 @@ public class XDSFileSource {
 		this.dir = dir;
 
 		File dbdir = new File(dir, "database");
-		docsetDB = new DocSetDB(dbdir);
+		docsetDB = new DocSetDB(dbdir, element.getAttribute("test").equals("yes"));
 
 		queue = new File(dir, "queue");
 		queue.mkdirs();
@@ -78,6 +78,7 @@ public class XDSFileSource {
 			File[] files = queue.listFiles();
 			if (files.length == 0) {
 				//get KOS and report for studies under this siteID
+				Timer t = new Timer();
 				logger.info("------------------------------------------------------------");
 				docInfoList = retrieveDocuments.getSubmissionSets();
 
@@ -88,7 +89,7 @@ public class XDSFileSource {
 					numOfDocs += retrieveDocuments.getStudy(docInfo);
 					logger.info("...done with "+docInfo.getDocumentUniqueID());
 				}
-				logger.info("------------------------------------------------------------");
+				logger.info("------------------------------------------------------------: "+t.getElapsedTime());
 
 				if (numOfDocs > 0){
 					files = queue.listFiles();
