@@ -35,6 +35,7 @@ public class XDSFileSource {
 	List<DocumentInfo> docInfoList;
 	String siteID;
 
+	boolean test = false;
 
     /**
 	 * Construct a XDSFileSource.
@@ -44,9 +45,10 @@ public class XDSFileSource {
 	public XDSFileSource(Element element, File dir, String siteID)  throws Exception {
 		this.element = element;
 		this.dir = dir;
+		this.test = element.getAttribute("test").equals("yes");
 
 		File dbdir = new File(dir, "database");
-		docsetDB = new DocSetDB(dbdir, element.getAttribute("test").equals("yes"));
+		docsetDB = new DocSetDB(dbdir, test);
 
 		queue = new File(dir, "queue");
 		queue.mkdirs();
@@ -92,6 +94,11 @@ public class XDSFileSource {
 					if (files.length >0 ) {
 						outFile = files[0];
 					}
+				}
+
+				if (test) {
+					try { Thread.sleep(60000); }
+					catch (Exception ignore) { }
 				}
 			}
 			else {
