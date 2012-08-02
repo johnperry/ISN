@@ -96,16 +96,16 @@ public class ITI18 {
             XDSQueryResponseType resSubmission = null;
             try {
                 resSubmission = c.invokeStoredQuery(qSubmission, true);
-                logger.info("Number of SubmissionSetResponses = "+resSubmission.getSubmissionSetResponses().size());
+                logger.debug("Number of SubmissionSetResponses = "+resSubmission.getSubmissionSetResponses().size());
 
                 int numOfsets = resSubmission.getReferences().size();
-                logger.info("iti18-FindSubmissionSets: " + numOfsets + " submission sets were found");
+                logger.debug("iti18-FindSubmissionSets: " + numOfsets + " submission sets were found");
                 for (int i=0; i < numOfsets; i++)
                 {
                     ArrayList<String> docIDs=new ArrayList<String>();
                     ObjectRefType setRef = (ObjectRefType) resSubmission.getReferences().get(i);
                     String submissionSetID = setRef.getId();
-                    logger.info("iti18-FindSubmissionSets: SubmissionSetID: " + submissionSetID);
+                    logger.debug("iti18-FindSubmissionSets: SubmissionSetID: " + submissionSetID);
 
                     //Get SubmissionSets
                     GetSubmissionSetAndContentsQuery qGetSubmission = null;
@@ -120,7 +120,7 @@ public class ITI18 {
                             DocumentEntryType docDetail = ((DocumentEntryResponseType) resGetSubmission.getDocumentEntryResponses().get(n)).getDocumentEntry();
                             String docID = docDetail.getUniqueId();
                             docIDs.add(docID);
-                            logger.info("Found docID [" + docID + "] under SubmissionSetID" + submissionSetID);
+                            logger.debug("Found docID [" + docID + "] under SubmissionSetID" + submissionSetID);
                         }
                     } catch (Exception e) {
                         logger.error("iti18-GetSubmissionSetAndContents- " + e.getMessage());

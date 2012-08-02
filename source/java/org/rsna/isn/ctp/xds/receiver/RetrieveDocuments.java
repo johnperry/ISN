@@ -96,15 +96,9 @@ public class RetrieveDocuments {
             input18.setRepositoryUniqueID(XDSConfiguration.getInstance().repositoryUniqueID);
             input18.setAssigningAuthorityUniversalId(XDSConfiguration.getInstance().assigningAuthorityUniversalID);
             input18.setAssigningAuthorityUniversalIdType(XDSConfiguration.getInstance().assigningAuthorityUniversalIDType);
-
-            logger.info("assigningAuthorityUniversalIDType = "+XDSConfiguration.getInstance().assigningAuthorityUniversalIDType);
-
             input18.setPatientID(siteID);
 
             HashMap<String,ArrayList<String>> docList = query18.queryDocuments(input18);
-
-			logger.info("ITI18 docList.size() = "+docList.size());
-
             if (!docList.isEmpty()) {
                 //Retrieve documents by DocumentUniqueIDs (KOS&Report)
                 ITI43 query43 = new ITI43();
@@ -120,10 +114,7 @@ public class RetrieveDocuments {
                 while (ssItr.hasNext()) {
                     String submissionSetID = (String) ssItr.next();
                     //if the submissionID has been retrieved, then go to next one
-                    if (docsetDB.contains(submissionSetID)) {
-                        logger.info("SubmissionSetID " + submissionSetID + " has already been retrieved.");
-                    }
-                    else {
+                    if (!docsetDB.contains(submissionSetID)) {
                         logger.info("Get documents for submissionSetID " + submissionSetID);
 
                         //get all documents under this submissionSetID and store in tmp folder
@@ -278,7 +269,7 @@ public class RetrieveDocuments {
                                 if (responseList.isEmpty()) {
                                     status = dsResponse.getRegistryResponse().getStatus();
                                     System.out.println("NO DOCUMENTS FOUND " + status);
-                                    logger.info("registry respose for this query is " + status);
+                                    logger.info("Registry response for this query is " + status);
                                 }
                                 else
                                 {
@@ -335,7 +326,7 @@ public class RetrieveDocuments {
             fs.renameTo(fd);
         }
         } catch (Exception e) {
-            logger.error("Fail to move file to queue:" + e.getMessage());
+            logger.error("Unable to move file to queue:" + e.getMessage());
         }
     }
 
@@ -343,19 +334,20 @@ public class RetrieveDocuments {
         RetrieveDocumentSetResponseType imagingDocumentSet = null;
 
         try {
-/*:39*/     org.rsna.isn.ctp.xds.rad69.ImagingDocumentSourceService service = new org.rsna.isn.ctp.xds.rad69.ImagingDocumentSourceService();
-        	logger.info("About to instantiate MTOMFeature");
+			org.rsna.isn.ctp.xds.rad69.ImagingDocumentSourceService service = new org.rsna.isn.ctp.xds.rad69.ImagingDocumentSourceService();
+
             MTOMFeature feature = new MTOMFeature();
-        	logger.info("About to call getImagingDocumentSourcePortSoap12");
-/*2:40*/    org.rsna.isn.ctp.xds.rad69.ImagingDocumentSourcePortType port = service.getImagingDocumentSourcePortSoap12(feature);
-        	logger.info("About to call getRequestContext");
+
+        	Timer t = new Timer();
+			org.rsna.isn.ctp.xds.rad69.ImagingDocumentSourcePortType port = service.getImagingDocumentSourcePortSoap12(feature);
+        	logger.info("getImagingDocumentSourcePortSoap12: " + t.getElapsedTime());
+
             Map<String, Object> ctxt = ((BindingProvider) port).getRequestContext();
             ctxt.put("com.sun.xml.internal.ws.transport.http.client.streaming.chunk.size", 1048576);
-        //ctxt.put(com.sun.xml.internal.ws.developer.JAXWSProperties.HTTP_CLIENT_STREAMING_CHUNK_SIZE, 1048576);
 
-        	logger.info("About to call imagingDocumentSourceRetrieveImagingDocumentSet");
-/*:05*/     imagingDocumentSet = port.imagingDocumentSourceRetrieveImagingDocumentSet(body);
-        	logger.info("...back from imagingDocumentSourceRetrieveImagingDocumentSet");
+			t.reset();
+			imagingDocumentSet = port.imagingDocumentSourceRetrieveImagingDocumentSet(body);
+        	logger.info("imagingDocumentSourceRetrieveImagingDocumentSet: " + t.getElapsedTime());
 
         } catch (Exception e) {
              logger.error("Error for imagingDocumentSourceRetrieveImagingDocumentSet : ",e);

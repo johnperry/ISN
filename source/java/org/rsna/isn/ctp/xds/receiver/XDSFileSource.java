@@ -53,9 +53,6 @@ public class XDSFileSource {
 
 		//Get the site ID that identifies the site to the clearinghouse
 		if (siteID == null) siteID = element.getAttribute("siteID");
-
-		logger.info("siteID = "+siteID);
-
 		this.siteID = siteID;
 
 		retrieveDocuments = new RetrieveDocuments(queue, docsetDB, siteID);
@@ -79,7 +76,6 @@ public class XDSFileSource {
 			if (files.length == 0) {
 				//get KOS and report for studies under this siteID
 				Timer t = new Timer();
-				logger.info("------------------------------------------------------------");
 				docInfoList = retrieveDocuments.getSubmissionSets();
 
 				//get images for each study
@@ -87,9 +83,9 @@ public class XDSFileSource {
 				for (DocumentInfo docInfo : docInfoList) {
 					logger.info("About to retrieve study: "+docInfo.getDocumentUniqueID());
 					numOfDocs += retrieveDocuments.getStudy(docInfo);
-					logger.info("...done with "+docInfo.getDocumentUniqueID());
+					logger.info("...done retrieving "+docInfo.getDocumentUniqueID());
 				}
-				logger.info("------------------------------------------------------------: "+t.getElapsedTime());
+				logger.info("-----------------Clearinghouse polling complete: "+t.getElapsedTime());
 
 				if (numOfDocs > 0){
 					files = queue.listFiles();

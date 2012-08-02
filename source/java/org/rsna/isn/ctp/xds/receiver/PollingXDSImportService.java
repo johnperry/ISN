@@ -61,7 +61,6 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 			//Get the minimum polling interval (in seconds)
 			interval = Math.max(  StringUtil.getInt(element.getAttribute("interval"), interval), interval );
 			interval *= 1000;
-			logger.info("Polling interval (ms) = "+interval);
 
 			//Initialize the XDSConfiguration
 			XDSConfiguration.load(element);
