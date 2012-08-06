@@ -10,10 +10,13 @@ package org.rsna.isn.ctp.xds.receiver;
 import java.io.File;
 import java.net.URL;
 import org.apache.log4j.Logger;
+import org.rsna.ctp.Configuration;
 import org.rsna.ctp.objects.FileObject;
 import org.rsna.ctp.pipeline.AbstractPipelineStage;
 import org.rsna.ctp.pipeline.ImportService;
 import org.rsna.ctp.pipeline.QueueManager;
+import org.rsna.server.HttpServer;
+import org.rsna.server.ServletSelector;
 import org.rsna.util.StringUtil;
 import org.w3c.dom.Element;
 
@@ -39,6 +42,8 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 
 	Poller poller = null;
 
+	String servletContext = "";
+
 	/**
 	 * Construct a PollingXDSImportService.
 	 * @param element the XML element from the configuration file,
@@ -62,15 +67,40 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 			interval = Math.max(  StringUtil.getInt(element.getAttribute("interval"), interval), interval );
 			interval *= 1000;
 
-			//Initialize the XDSConfiguration
-			XDSConfiguration.load(element);
+			//Get the servlet context. This is only used for the clinical receiver, not the research receiver
+			servletContext = element.getAttribute("servletContext").trim();
+		}
+	}
 
+	/**
+	 * Start the pipeline stage. This method is called by the pipeline
+	 * when it is started. At that time, the Configuration object has
+	 * been fully constructed, so it can be interrogated. Don't try to
+	 * get the Configuration in the constructor of this class.
+	 */
+	public void start() {
+		Configuration config = Configuration.getInstance();
+
+		//Initialize the XDSConfiguration
+		XDSConfiguration.load(element);
+
+		try {
 			//Instantiate the XDSFileSource
 			fileSource = new XDSFileSource(element, temp, null);
 
 			//Instantiate the Poller and start it.
 			poller = new Poller();
 			poller.start();
+
+			//Install the servlet if the context is supplied
+			if (!servletContext.equals("")) {
+				HttpServer server = config.getServer();
+				ServletSelector selector = server.getServletSelector();
+				selector.addServlet(servletContext, XDSReceiverServlet.class);
+			}
+		}
+		catch (Exception ex) {
+			logger.warn("Unable to start the stage", ex);
 		}
 	}
 

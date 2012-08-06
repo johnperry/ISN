@@ -70,11 +70,7 @@
 
 	<target name="jar" depends="compile">
 
-		<copy overwrite="true" todir="${build}">
-			<fileset dir="${files}"/>
-		</copy>
-
-		<jar jarfile="${build}/CTP/libraries//isn/ISN.jar">
+		<jar jarfile="${build}/CTP/libraries/isn/ISN.jar">
 			<manifest>
 	            <attribute name="Version" value="${version}"/>
 	            <attribute name="Date" value="${today} at ${now}"/>
@@ -86,6 +82,10 @@
 	</target>
 
 	<target name="installer" depends="jar">
+
+		<copy overwrite="true" todir="${build}">
+			<fileset dir="${files}"/>
+		</copy>
 
 		<copy overwrite="true" todir="${build}/CTP/libraries">
 			<fileset dir="${libraries}" includes="**"/>
