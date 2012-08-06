@@ -88,15 +88,11 @@
 
 	<target name="installer" depends="jar">
 
-		<copy overwrite="true" todir="${build}">
-			<fileset dir="${tls}"/>
-		</copy>
-
 		<copy overwrite="true" todir="${build}/CTP/libraries">
 			<fileset dir="${libraries}" includes="**"/>
 		</copy>
 		<copy overwrite="true" todir="${build}/CTP">
-			<fileset dir="${files}" includes="**"/>
+			<fileset dir="${tls}" includes="**"/>
 		</copy>
 		<copy overwrite="true" todir="${build}/config">
 			<fileset dir="${source}/config" includes="*.*"/>

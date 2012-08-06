@@ -5,10 +5,10 @@
 <xsl:template match="/">
 	<html>
 		<head>
-			<title>XDS Receiver Servlet</title>
+			<title>XDS Sender Servlet</title>
 		</head>
 		<body>
-			<h1>XDS Receiver Servlet</h1>
+			<h1>XDS Sender Servlet</h1>
 		</body>
 	</html>
 </xsl:template>
