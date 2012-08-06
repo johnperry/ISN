@@ -6,7 +6,7 @@
 	<property name="source" value="${basedir}/source"/>
 	<property name="java" value="${source}/java"/>
 	<property name="files" value="${source}/files"/>
-	<property name="tls" value="${source}/tls"/>
+	<property name="resources" value="${source}/resources"/>
 	<property name="ctp" value="../CTP"/>
 	<property name="isn" value="org/rsna/isn"/>
 	<property name="libraries" value="${basedir}/libraries"/>
@@ -72,7 +72,7 @@
 	<target name="jar" depends="compile">
 
 		<copy overwrite="true" todir="${build}">
-			<fileset dir="${files}"/>
+			<fileset dir="${resources}"/>
 		</copy>
 
 		<jar jarfile="${build}/CTP/libraries/isn/ISN.jar">
@@ -92,7 +92,7 @@
 			<fileset dir="${libraries}" includes="**"/>
 		</copy>
 		<copy overwrite="true" todir="${build}/CTP">
-			<fileset dir="${tls}" includes="**"/>
+			<fileset dir="${files}" includes="**"/>
 		</copy>
 		<copy overwrite="true" todir="${build}/config">
 			<fileset dir="${source}/config" includes="*.*"/>
