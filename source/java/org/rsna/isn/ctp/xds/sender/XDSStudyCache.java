@@ -23,7 +23,7 @@ public class XDSStudyCache {
 
 	static final Logger logger = Logger.getLogger(XDSStudyCache.class);
 
-	private static Hashtable<String,XDSStudyCache> caches = null;
+	private static Hashtable<String,XDSStudyCache> caches = new Hashtable<String,XDSStudyCache>();
 	private File cacheRoot;
 	private File indexRoot;
 	private String context;

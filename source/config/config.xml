@@ -10,6 +10,11 @@
             quarantine="quarantines/Transmitter/DicomImportService"
             root="roots/Transmitter/DicomImportService"
 			servletContext="xds-export" />
+        <ObjectCache
+            name="ObjectCache-RS"
+            class="org.rsna.ctp.stdstages.ObjectCache"
+            id="ObjectCache-RS"
+            root="roots/Transmitter/ObjectCache-RS" />
         <DicomAnonymizer
             class="org.rsna.ctp.stdstages.DicomAnonymizer"
             lookupTable="scripts/lookup-table.properties"
@@ -17,13 +22,15 @@
             quarantine="quarantines/Transmitter/DicomAnonymizer"
             root="roots/Transmitter/DicomAnonymizer"
             script="scripts/Transmitter.script"/>
-        <FileStorageService
-            class="org.rsna.ctp.stdstages.FileStorageService"
-            fsNameTag="00120010"
-            name="FileStorageService"
-            port="1085"
-            quarantine="quarantines/Transmitter/FileStorageService"
-            root="roots/Transmitter/FileStorageService"/>
+        <CachingXDSExportService
+            name="CachingXDSExportService-RS"
+            class="org.rsna.isn.ctp.xds.sender.CachingXDSExportService"
+            root="roots/Transmitter/CachingXDSExportService-RS"
+            cacheID="ObjectCache-RS"
+            servletContext="xds-export"
+            minAge="300"
+            timeDepth="30"
+            quarantine="quarantines/Transmitter/CachingXDSExportService-RS" />
     </Pipeline>
     <Pipeline name="Receiver">
 		<PollingXDSImportService

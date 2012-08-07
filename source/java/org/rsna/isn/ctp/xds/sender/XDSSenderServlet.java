@@ -8,6 +8,7 @@
 package org.rsna.isn.ctp.xds.sender;
 
 import java.io.File;
+import org.apache.log4j.Logger;
 import org.rsna.ctp.objects.ZipObject;
 import org.rsna.server.HttpRequest;
 import org.rsna.server.HttpResponse;
@@ -24,6 +25,8 @@ import org.w3c.dom.Element;
  * destination keys and to trigger their transmission.
  */
 public class XDSSenderServlet extends Servlet {
+
+	static final Logger logger = Logger.getLogger(XDSSenderServlet.class);
 
 	/**
 	 * Static init method. Nothing is required; the empty
@@ -92,7 +95,6 @@ public class XDSSenderServlet extends Servlet {
 				return;
 			}
 		}
-
 		//None of the above, treat it as a file request.
 		super.doGet(req, res);
 	}
@@ -114,7 +116,6 @@ public class XDSSenderServlet extends Servlet {
 		try {
 			XDSStudyCache cache = XDSStudyCache.getInstance(context);
 			Document doc = cache.getActiveStudiesXML();
-
 			String xslPath = isEdgeServer ? "/XDSSenderServletES.xsl" : "/XDSSenderServlet.xsl";
 			Document xsl = XmlUtil.getDocument( FileUtil.getStream( xslPath ) );
 			String[] params = new String[] {
