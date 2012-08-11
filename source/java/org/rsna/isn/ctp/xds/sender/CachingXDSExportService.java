@@ -18,6 +18,7 @@ import org.rsna.ctp.stdstages.ObjectCache;
 import org.rsna.server.HttpServer;
 import org.rsna.server.ServletSelector;
 import org.rsna.util.StringUtil;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -27,7 +28,7 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 
 	static final Logger logger = Logger.getLogger(CachingXDSExportService.class);
 
-	XDSStudyCache cache = null;
+	XDSStudyCache studyCache = null;
 	String servletContext = "";
 	long minAge = 300;
 	int count = 0;
@@ -46,14 +47,24 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		super(element);
 		if (root == null) logger.error(name+": No root directory was specified.");
 		else root.mkdirs();
-		servletContext = element.getAttribute("servletContext").trim();
-		if (servletContext.equals("")) servletContext = "XDSSender";
+
 		minAge = Math.max( StringUtil.getLong(element.getAttribute("minAge")), minAge ) * 1000;
 		timeDepth = StringUtil.getLong(element.getAttribute("timeDepth"));
-		String objectCacheID = element.getAttribute("cacheID").trim();
-		cache = XDSStudyCache.getInstance(servletContext, root);
-
 		deleteOnTransmission = !element.getAttribute("deleteOnTransmission").equals("no");
+
+		//The objectCacheID is the id of a stage that holds the original (PHI) version of an object.
+		String objectCacheID = element.getAttribute("cacheID").trim();
+
+		//Important: the servletContext attribute is used both as the context of the servlet in the
+		//server and the index of the study cache. This makes it possible for the servlet (which
+		//knows its context) to obtain the singleton instance of the study cache associated with
+		//this stage. If the servletContext is missing, set xds-export as the default.
+		servletContext = element.getAttribute("servletContext").trim();
+		if (servletContext.equals("")) {
+			logger.warn("Missing servletContext");
+			servletContext = "xds-export";
+		}
+		studyCache = XDSStudyCache.getInstance(servletContext, root);
 	}
 
 	/**
@@ -67,6 +78,9 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 
 		//Get the ObjectCache stage so we can obtain PHI when necessary.
 		objectCache = (ObjectCache)config.getRegisteredStage(objectCacheID);
+
+		//Register this stage under the servlet context so the servlet can find it
+		config.registerStage(this);
 
 		//Install the servlet on the context
 		HttpServer server = config.getServer();
@@ -83,23 +97,31 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 	 */
 	public void shutdown() {
 		stop = true;
-		cache.close();
+		studyCache.close();
 	}
 
 	/**
 	 * Determine whether the pipeline stage has shut down.
 	 */
 	public boolean isDown() {
-		return cache.isClosed();
+		return studyCache.isClosed();
 	}
 
 	/**
-	 * Add a FileObject to the cache.
+	 * Add a FileObject to the studyCache.
 	 */
 	public synchronized void export(FileObject fileObject) {
 		count++;
 		FileObject phiObject = (objectCache != null) ? objectCache.getCachedObject() : null;
-		cache.store(fileObject, phiObject);
+		studyCache.store(fileObject, phiObject);
+	}
+
+	/**
+	 * Get the active studies.
+	 * @return an XML representation of the OPEN or COMPLETE studies managed by this stage.
+	 */
+	public synchronized Document getActiveStudiesXML() {
+		return studyCache.getActiveStudiesXML();
 	}
 
 	/**
@@ -110,9 +132,9 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		String stageUniqueStatus =
 			"<tr><td width=\"20%\">Files received:</td><td>" + count + "</td></tr>"
 			+ "<tr><td width=\"20%\">Studies cached:</td>"
-			+ "<td>" + cache.getStudyCount() + "</td></tr>"
+			+ "<td>" + studyCache.getStudyCount() + "</td></tr>"
 			+ "<tr><td width=\"20%\">Studies complete:</td>"
-			+ "<td>" + cache.getCompleteStudyCount() + "</td></tr>";
+			+ "<td>" + studyCache.getCompleteStudyCount() + "</td></tr>";
 		return super.getStatusHTML(stageUniqueStatus);
 	}
 
@@ -122,10 +144,10 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		}
 		public void run() {
 			while (!stop) {
-				cache.checkOpenStudies(System.currentTimeMillis() - minAge);
+				studyCache.checkOpenStudies(System.currentTimeMillis() - minAge);
 				if (deleteOnTransmission) {
 					//Keep transmitted studies for 1 hour, just so the user can see that they went
-					cache.deleteTransmittedStudies(System.currentTimeMillis() - 60 * 60 * 1000);
+					studyCache.deleteTransmittedStudies(System.currentTimeMillis() - 60 * 60 * 1000);
 				}
 				try { Thread.sleep(minAge); }
 				catch (Exception ignore) { }

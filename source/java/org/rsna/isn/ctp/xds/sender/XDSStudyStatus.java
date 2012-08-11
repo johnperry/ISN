@@ -7,12 +7,16 @@
 
 package org.rsna.isn.ctp.xds.sender;
 
+import java.io.Serializable;
+
 /**
  * A class to encapsulate typesafe enum return status values for XDS studies
  * being sent to the Clearinghouse. This class provides static final instance
  * for each of the possible operational results.
  */
-public class XDSStudyStatus {
+public class XDSStudyStatus implements Serializable {
+
+	static final long serialVersionUID = 1L;
 
 	private final String status;
 
@@ -70,6 +74,13 @@ public class XDSStudyStatus {
 		if (name.equals("SUCCESS")) return SUCCESS;
 		if (name.equals("FAILED")) return FAILED;
 		return UNDEFINED;
+	}
+
+	/**
+	 * See if a status matches a specified status.
+	 */
+	public boolean is(XDSStudyStatus s) {
+		return this.status.equals(s.status);
 	}
 
 }

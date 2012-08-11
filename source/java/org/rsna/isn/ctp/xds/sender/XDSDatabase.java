@@ -29,9 +29,11 @@ public class XDSDatabase {
 	static final Logger logger = Logger.getLogger(XDSDatabase.class);
 
 	private static final String databaseName = "XDSDatabase";
-	private static final String htreeName = "studies";
+	private static final String studiesHTreeName = "studies";
+	private static final String destinationsHTreeName = "destinations";
 	private RecordManager recman = null;
 	private HTree studies = null;
+	private HTree destinations = null;
 
 	private File indexRoot;
 
@@ -50,7 +52,7 @@ public class XDSDatabase {
 	 * @return the study or null if the studyUID does
 	 * not exist in the database.
 	 */
-	public synchronized XDSStudy get(String studyUID) {
+	public synchronized XDSStudy getStudy(String studyUID) {
 		try { return (XDSStudy)studies.get(studyUID); }
 		catch (Exception ex) { return null; }
 	}
@@ -61,9 +63,12 @@ public class XDSDatabase {
 	 * studyUID key is obtained from the XDSStudy object.
 	 */
 	public synchronized void put(XDSStudy study) {
-		try { studies.put(study.getStudyUID(), study); }
+		try {
+			studies.put(study.getStudyUID(), study);
+			recman.commit();
+		}
 		catch (Exception ex) {
-			logger.warn("Unable to update the study database");
+			logger.warn("Unable to update the study database", ex);
 		}
 	}
 
@@ -73,9 +78,42 @@ public class XDSDatabase {
 	 * studyUID key is obtained from the XDSStudy object.
 	 */
 	public synchronized void remove(XDSStudy study) {
-		try { studies.remove(study.getStudyUID()); }
+		try {
+			studies.remove(study.getStudyUID());
+			recman.commit();
+		}
 		catch (Exception ex) {
-			logger.warn("Unable to remove the study");
+			logger.warn("Unable to remove the study", ex);
+		}
+	}
+
+	/**
+	 * Insert a destination by its key value.
+	 * @param destination the destination to store. Note: the
+	 * key value is obtained from the Destination object.
+	 */
+	public synchronized void put(Destination destination) {
+		try {
+			destinations.put(destination.getKey(), destination);
+			recman.commit();
+		}
+		catch (Exception ex) {
+			logger.warn("Unable to update the destination database", ex);
+		}
+	}
+
+	/**
+	 * Remove a destination
+	 * @param destination the destination to remove. Note: the
+	 * key value is obtained from the Destination object.
+	 */
+	public synchronized void remove(Destination destination) {
+		try {
+			destinations.remove(destination.getKey());
+			recman.commit();
+		}
+		catch (Exception ex) {
+			logger.warn("Unable to remove the destination", ex);
 		}
 	}
 
@@ -94,7 +132,7 @@ public class XDSDatabase {
 			while ( (key = (String)it.next()) != null ) {
 				study = (XDSStudy)studies.get(key);
 				XDSStudyStatus status = study.getStatus();
-				if (status.equals(XDSStudyStatus.OPEN) || status.equals(XDSStudyStatus.COMPLETE)) {
+				if (status.is(XDSStudyStatus.OPEN) || status.is(XDSStudyStatus.COMPLETE)) {
 					list.add( study );
 				}
 			}
@@ -104,15 +142,41 @@ public class XDSDatabase {
 			return array;
 		}
 		catch (Exception ex) {
-			logger.warn("Unable to list the active studies");
+			logger.warn("Unable to list the active studies", ex);
 			return new XDSStudy[0];
 		}
 	}
 
 	/**
-	 * Get an array of studies that are either OPEN or COMPLETE,
+	 * Get an array of all the stored destinations, sorted by name.
+	 * @return the sorted list of destinations, or
+	 * an empty array if an error occurs.
+	 */
+	public synchronized Destination[] getDestinations() {
+		try {
+			Destination destination;
+			String key;
+			LinkedList<Destination> list = new LinkedList<Destination>();
+			FastIterator it = destinations.keys();
+			while ( (key = (String)it.next()) != null ) {
+				list.add( (Destination)destinations.get(key) );
+			}
+			Destination[] array = new Destination[list.size()];
+			array = list.toArray(array);
+			Arrays.sort(array);
+			return array;
+		}
+		catch (Exception ex) {
+			logger.warn("Unable to list the destinations", ex);
+			return new Destination[0];
+		}
+	}
+
+	/**
+	 * Get an array of all the studies with a specified StudyDtatus,
 	 * sorted on PatientID.
-	 * @return the sorted list of OPEN or COMPLETE studies, or
+	 * @param studyStatus the status of the studies to be returned.
+	 * @return the sorted list of all studies, or
 	 * an empty array if an error occurs.
 	 */
 	public synchronized XDSStudy[] getStudies(XDSStudyStatus studyStatus) {
@@ -124,7 +188,7 @@ public class XDSDatabase {
 			while ( (key = (String)it.next()) != null ) {
 				study = (XDSStudy)studies.get(key);
 				XDSStudyStatus status = study.getStatus();
-				if (status.equals(studyStatus)) {
+				if (status.is(studyStatus)) {
 					list.add( study );
 				}
 			}
@@ -134,7 +198,7 @@ public class XDSDatabase {
 			return array;
 		}
 		catch (Exception ex) {
-			logger.warn("Unable to list the studies with status "+studyStatus.toString());
+			logger.warn("Unable to list the studies with status "+studyStatus.toString(), ex);
 			return new XDSStudy[0];
 		}
 	}
@@ -151,14 +215,14 @@ public class XDSDatabase {
 			while ( (key = (String)it.next()) != null ) {
 				study = (XDSStudy)studies.get(key);
 				XDSStudyStatus status = study.getStatus();
-				if (status.equals(XDSStudyStatus.COMPLETE)) {
+				if (status.is(XDSStudyStatus.COMPLETE)) {
 					count++;
 				}
 			}
 			return count;
 		}
 		catch (Exception ex) {
-			logger.warn("Unable to count the studies with status COMPLETE");
+			logger.warn("Unable to count the studies with status COMPLETE", ex);
 			return 0;
 		}
 	}
@@ -175,14 +239,14 @@ public class XDSDatabase {
 			while ( (key = (String)it.next()) != null ) {
 				study = (XDSStudy)studies.get(key);
 				XDSStudyStatus status = study.getStatus();
-				if (status.equals(XDSStudyStatus.INTRANSIT)) {
+				if (status.is(XDSStudyStatus.INTRANSIT)) {
 					count++;
 				}
 			}
 			return count;
 		}
 		catch (Exception ex) {
-			logger.warn("Unable to count the studies with status INTRANSIT");
+			logger.warn("Unable to count the studies with status INTRANSIT", ex);
 			return 0;
 		}
 	}
@@ -199,7 +263,7 @@ public class XDSDatabase {
 			return count;
 		}
 		catch (Exception ex) {
-			logger.warn("Unable to count the studies");
+			logger.warn("Unable to count the studies", ex);
 			return 0;
 		}
 	}
@@ -235,10 +299,11 @@ public class XDSDatabase {
 			try {
 				File databaseFile = new File(dir, databaseName);
 				recman = getRecordManager(databaseFile.getAbsolutePath());
-				studies = getHTree(recman, htreeName);
+				studies = getHTree(recman, studiesHTreeName);
+				destinations = getHTree(recman, destinationsHTreeName);
 			}
 			catch (Exception ex) {
-				logger.warn("Unable to instantiate the XDS studies database.");
+				logger.warn("Unable to instantiate the XDS studies database.", ex);
 				studies = null;
 			}
 		}

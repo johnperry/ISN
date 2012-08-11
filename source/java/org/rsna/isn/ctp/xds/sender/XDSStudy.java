@@ -8,11 +8,7 @@
 package org.rsna.isn.ctp.xds.sender;
 
 import java.io.File;
-import java.util.Properties;
-import jdbm.htree.HTree;
-import jdbm.RecordManager;
-import jdbm.RecordManagerFactory;
-import jdbm.RecordManagerOptions;
+import java.io.Serializable;
 import org.apache.log4j.Logger;
 import org.rsna.util.XmlUtil;
 import org.w3c.dom.Document;
@@ -21,7 +17,9 @@ import org.w3c.dom.Element;
 /**
  * A database entry for a cached study.
  */
-public class XDSStudy implements Comparable<XDSStudy> {
+public class XDSStudy implements Serializable, Comparable<XDSStudy> {
+
+	static final long serialVersionUID = 1L;
 
 	static final Logger logger = Logger.getLogger(XDSStudy.class);
 
@@ -85,9 +83,8 @@ public class XDSStudy implements Comparable<XDSStudy> {
 	/**
 	 * Update the size
 	 */
-	public synchronized int incrementSize(int increment) {
-		size += increment;
-		return size;
+	public synchronized void setSize(int size) {
+		this.size = size;
 	}
 
 	/**

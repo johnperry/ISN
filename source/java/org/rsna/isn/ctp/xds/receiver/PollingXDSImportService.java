@@ -178,6 +178,7 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 		public void run() {
 			File file;
 			while (!stop) {
+				lastPollTime = System.currentTimeMillis();
 				if ( (file=fileSource.getFile()) != null ) {
 					queueManager.enqueue(file);
 					file.delete();

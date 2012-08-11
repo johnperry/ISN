@@ -95,19 +95,25 @@ public class XDSStudyCache {
 	 * indexed values are obtained from fileObject.
 	 */
 	public void store(FileObject fileObject, FileObject phiObject) {
+
 		//In this method, fileObject refers to the object that has
-		//flowed down the pipe to the XDSExportService stage. That
-		//object has probably been anonymized.
+		//flowed down the pipe to the export stage. Depending on the
+		//configuration, that object has probably been anonymized.
+
 		//The phiObject is the object that was cached by the ObjectCache
 		//stage before any anonymization has taken place, so it contains PHI.
+
 		//Thus, fileObject is the object that will be exported, while
 		//phiObject is the object containing the PHI that will be presented to the
 		//user who selects studies (through the servlet) and assigns the
 		//destination key, triggering the actual export.
+
 		//Note that if the phiObject is null (say, because the configuation
 		//is incorrect or because the stage is intentionally being used to
 		//export objects containing PHI), we use the anonymized values
-		//in the database. This causes no problems for the program.
+		//in the database. This causes no problems for the program, but
+		//administrators should be warned that this can be a PHI leak.
+
 		FileObject fo = (phiObject != null) ? phiObject : fileObject;
 		String studyUID = fo.getStudyInstanceUID();
 		String dirname = studyUID.replaceAll("[\\\\/\\s]", "_").trim();
@@ -118,8 +124,8 @@ public class XDSStudyCache {
 		int inc = file.exists() ? 0 : 1;
 		FileUtil.copy(fileObject.getFile(), file);
 
-		//Now update the database so the servlet can know about the study.
-		XDSStudy study = database.get(studyUID);
+		//Now update the database so the servlet can track the study.
+		XDSStudy study = database.getStudy(studyUID);
 		if (study == null) {
 			study = new XDSStudy(studyUID,
 								 studyDir, //where all the objects for the study are stored
@@ -131,7 +137,7 @@ public class XDSStudyCache {
 								 fo.getPatientID(),
 								 fo.getPatientName());
 		}
-		study.incrementSize(inc); //count the object added to the study
+		study.setSize(studyDir.listFiles().length); //count the object added to the study
 		study.setLastModifiedTime(); //record the time of this object storage
 		database.put(study);
 	}
@@ -180,7 +186,7 @@ public class XDSStudyCache {
 			Document doc = XmlUtil.getDocument();
 			Element root = doc.createElement("Studies");
 			doc.appendChild(root);
-			XDSStudy study = database.get(studyUID);
+			XDSStudy study = database.getStudy(studyUID);
 			if (study != null) {
 				root.appendChild( doc.importNode(study.getXML().getDocumentElement(), true) );
 			}
