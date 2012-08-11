@@ -23,14 +23,30 @@
             root="roots/Transmitter/DicomAnonymizer"
             script="scripts/Transmitter.script"/>
         <CachingXDSExportService
-        	id="xds-export"
+        	servletContext="xds-export"
             name="CachingXDSExportService-RS"
             class="org.rsna.isn.ctp.xds.sender.CachingXDSExportService"
             root="roots/Transmitter/CachingXDSExportService-RS"
             cacheID="ObjectCache-RS"
             minAge="300"
             timeDepth="30"
-            quarantine="quarantines/Transmitter/CachingXDSExportService-RS" />
+            quarantine="quarantines/Transmitter/CachingXDSExportService-RS">
+            <Destination
+            	name="Trial 1"
+            	key="key1" />
+            <Destination
+            	name="Trial 2"
+            	key="key2" />
+            <Destination
+            	name="Trial 3"
+            	key="key3" />
+            <Destination
+            	name="Trial 4"
+            	key="key4" />
+            <Destination
+            	name="Trial 5"
+            	key="key5" />
+        </CachingXDSExportService>
     </Pipeline>
     <Pipeline name="Receiver">
 		<PollingXDSImportService

@@ -2,6 +2,11 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="yes" />
 
+<xsl:param name="admin"/>
+<xsl:param name="update"/>
+<xsl:param name="isEdgeServer"/>
+<xsl:param name="destinations"/>
+
 <xsl:template match="/Studies">
 	<html>
 		<head>
@@ -9,6 +14,14 @@
 		</head>
 		<body>
 			<h1>XDS Sender Servlet</h1>
+
+			<p>
+				<select name="key">
+					<xsl:for-each select="$destinations/Destinations/Destination">
+						<option value="{@key}"><xsl:value-of select="@name"/></option>
+					</xsl:for-each>
+				</select>
+			</p>
 
 			<xsl:if test="Study">
 				<table border="1">

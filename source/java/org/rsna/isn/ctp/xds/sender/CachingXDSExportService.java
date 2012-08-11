@@ -20,6 +20,7 @@ import org.rsna.server.ServletSelector;
 import org.rsna.util.StringUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * An ExportService that caches studies and sends them to the ISN Clearinghouse.
@@ -28,6 +29,7 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 
 	static final Logger logger = Logger.getLogger(CachingXDSExportService.class);
 
+	Destinations destinations = null;
 	XDSStudyCache studyCache = null;
 	String servletContext = "";
 	long minAge = 300;
@@ -56,15 +58,27 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		String objectCacheID = element.getAttribute("cacheID").trim();
 
 		//Important: the servletContext attribute is used both as the context of the servlet in the
-		//server and the index of the study cache. This makes it possible for the servlet (which
-		//knows its context) to obtain the singleton instance of the study cache associated with
-		//this stage. If the servletContext is missing, set xds-export as the default.
+		//server and the index of the studies in the study cache. This makes it possible for the servlet
+		//(which knows its context) to obtain the singleton instance of the study cache associated with
+		//this stage. If the servletContext is missing, "xds-export" is supplied as the default, but in
+		//a configuration with multiple CachingXDSExportService stages, it is important that the stages
+		//have different servletContexts, so a warning is issued when the default is supplied.
 		servletContext = element.getAttribute("servletContext").trim();
 		if (servletContext.equals("")) {
-			logger.warn("Missing servletContext");
+			logger.warn("Missing servletContext, using \"xds-export\".");
 			servletContext = "xds-export";
 		}
 		studyCache = XDSStudyCache.getInstance(servletContext, root);
+
+		//Set up the destinations. Like StudyCaches,
+		//Destinations are indexed by servletContext.
+		destinations = Destinations.getInstance(servletContext);
+		destinations.clear();
+		NodeList nl = element.getElementsByTagName("Destination");
+		for (int i=0; i<nl.getLength(); i++) {
+			Element d = (Element)nl.item(i);
+			destinations.put( new Destination( d.getAttribute("key").trim(), d.getAttribute("name").trim() ) );
+		}
 	}
 
 	/**

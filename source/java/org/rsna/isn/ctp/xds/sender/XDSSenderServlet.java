@@ -114,14 +114,17 @@ public class XDSSenderServlet extends Servlet {
 
 	private String getPage(boolean admin, boolean update, boolean isEdgeServer) {
 		try {
+			Destinations destinations = Destinations.getInstance(context);
+			Document destinationsDoc = destinations.getDestinationsXML();
 			XDSStudyCache cache = XDSStudyCache.getInstance(context);
 			Document doc = cache.getActiveStudiesXML();
 			String xslPath = isEdgeServer ? "/XDSSenderServletES.xsl" : "/XDSSenderServlet.xsl";
 			Document xsl = XmlUtil.getDocument( FileUtil.getStream( xslPath ) );
-			String[] params = new String[] {
+			Object[] params = new Object[] {
 				"admin", (admin ? "yes" : "no"),
 				"update", (update ? "yes" : "no"),
-				"isEdgeServer", (isEdgeServer ? "yes" : "no")
+				"isEdgeServer", (isEdgeServer ? "yes" : "no"),
+				"destinations", destinationsDoc
 			};
 			return XmlUtil.getTransformedText( doc, xsl, params );
 		}

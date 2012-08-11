@@ -33,7 +33,6 @@ public class XDSDatabase {
 	private static final String destinationsHTreeName = "destinations";
 	private RecordManager recman = null;
 	private HTree studies = null;
-	private HTree destinations = null;
 
 	private File indexRoot;
 
@@ -88,36 +87,6 @@ public class XDSDatabase {
 	}
 
 	/**
-	 * Insert a destination by its key value.
-	 * @param destination the destination to store. Note: the
-	 * key value is obtained from the Destination object.
-	 */
-	public synchronized void put(Destination destination) {
-		try {
-			destinations.put(destination.getKey(), destination);
-			recman.commit();
-		}
-		catch (Exception ex) {
-			logger.warn("Unable to update the destination database", ex);
-		}
-	}
-
-	/**
-	 * Remove a destination
-	 * @param destination the destination to remove. Note: the
-	 * key value is obtained from the Destination object.
-	 */
-	public synchronized void remove(Destination destination) {
-		try {
-			destinations.remove(destination.getKey());
-			recman.commit();
-		}
-		catch (Exception ex) {
-			logger.warn("Unable to remove the destination", ex);
-		}
-	}
-
-	/**
 	 * Get an array of studies that are either OPEN or COMPLETE,
 	 * sorted on PatientID.
 	 * @return the sorted list of OPEN or COMPLETE studies, or
@@ -144,31 +113,6 @@ public class XDSDatabase {
 		catch (Exception ex) {
 			logger.warn("Unable to list the active studies", ex);
 			return new XDSStudy[0];
-		}
-	}
-
-	/**
-	 * Get an array of all the stored destinations, sorted by name.
-	 * @return the sorted list of destinations, or
-	 * an empty array if an error occurs.
-	 */
-	public synchronized Destination[] getDestinations() {
-		try {
-			Destination destination;
-			String key;
-			LinkedList<Destination> list = new LinkedList<Destination>();
-			FastIterator it = destinations.keys();
-			while ( (key = (String)it.next()) != null ) {
-				list.add( (Destination)destinations.get(key) );
-			}
-			Destination[] array = new Destination[list.size()];
-			array = list.toArray(array);
-			Arrays.sort(array);
-			return array;
-		}
-		catch (Exception ex) {
-			logger.warn("Unable to list the destinations", ex);
-			return new Destination[0];
 		}
 	}
 
@@ -300,7 +244,6 @@ public class XDSDatabase {
 				File databaseFile = new File(dir, databaseName);
 				recman = getRecordManager(databaseFile.getAbsolutePath());
 				studies = getHTree(recman, studiesHTreeName);
-				destinations = getHTree(recman, destinationsHTreeName);
 			}
 			catch (Exception ex) {
 				logger.warn("Unable to instantiate the XDS studies database.", ex);
