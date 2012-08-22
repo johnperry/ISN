@@ -8,6 +8,7 @@
 package org.rsna.isn.ctp.xds.receiver;
 
 import java.io.File;
+import org.apache.log4j.Logger;
 import org.rsna.ctp.objects.ZipObject;
 import org.rsna.server.HttpRequest;
 import org.rsna.server.HttpResponse;
@@ -24,6 +25,8 @@ import org.w3c.dom.Element;
  * retrieve from the clearinghouse.
  */
 public class XDSReceiverServlet extends Servlet {
+
+	static final Logger logger = Logger.getLogger(XDSReceiverServlet.class);
 
 	/**
 	 * Static init method. Nothing is required; the empty
@@ -52,13 +55,10 @@ public class XDSReceiverServlet extends Servlet {
 		int length = path.length();
 
 		if (req.isFromAuthenticatedUser()) {
-			boolean admin = req.userHasRole("admin");
-			boolean update = req.userHasRole("update");
 
 			if (length == 1) {
 				//This is a request for the main page
-				boolean isEdgeServer = req.getParameter("ui","").equals("ES");
-				res.write( getPage(admin, update, isEdgeServer) );
+				res.write( getPage() );
 				res.setContentType("html");
 				res.disableCaching();
 				res.send();
@@ -74,22 +74,25 @@ public class XDSReceiverServlet extends Servlet {
 	 * The servlet method that responds to an HTTP POST.
 	 */
 	public void doPost(HttpRequest req, HttpResponse res) throws Exception {
-		//For now, just send a notimplemented response
-		res.setResponseCode( res.notimplemented );
+
+		String usertoken = req.getParameter("usertoken", "usertoken");
+		String dateofbirth = req.getParameter("dateofbirth", "19460201");
+		String password = req.getParameter("password", "password");
+
+		String key = TransHash.get(usertoken, dateofbirth, password);
+
+		//For now, just return the key
+		res.write("Key: "+key);
+		res.setContentType("txt");
 		res.send();
 	}
 
-	private String getPage(boolean admin, boolean update, boolean isEdgeServer) {
+	private String getPage() {
 		try {
 			Document doc = getSubmissionSetsDocument();
-			String xslPath = isEdgeServer ? "/XDSReceiverServletES.xsl" : "/XDSReceiverServlet.xsl";
+			String xslPath = "/XDSReceiverServlet.xsl";
 			Document xsl = XmlUtil.getDocument( FileUtil.getStream( xslPath ) );
-			String[] params = new String[] {
-				"admin", (admin ? "yes" : "no"),
-				"update", (update ? "yes" : "no"),
-				"isEdgeServer", (isEdgeServer ? "yes" : "no")
-			};
-			return XmlUtil.getTransformedText( doc, xsl, params );
+			return XmlUtil.getTransformedText( doc, xsl, null );
 		}
 		catch (Exception ex) { return "Unable to create the receiver page."; }
 	}

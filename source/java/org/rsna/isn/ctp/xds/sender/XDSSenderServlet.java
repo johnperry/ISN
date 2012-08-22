@@ -8,6 +8,7 @@
 package org.rsna.isn.ctp.xds.sender;
 
 import java.io.File;
+import java.util.List;
 import org.apache.log4j.Logger;
 import org.rsna.ctp.objects.ZipObject;
 import org.rsna.server.HttpRequest;
@@ -54,46 +55,17 @@ public class XDSSenderServlet extends Servlet {
 		Path path = req.getParsedPath();
 		int length = path.length();
 
-		if (req.isFromAuthenticatedUser()) {
-			boolean admin = req.userHasRole("admin");
-			boolean update = req.userHasRole("update");
+		if (req.isFromAuthenticatedUser() && req.userHasRole("admin")) {
 
 			if (length == 1) {
 				//This is a request for the management page
-				boolean isEdgeServer = req.getParameter("ui","").equals("ES");
-				res.write( getPage(admin, update, isEdgeServer) );
+				res.write( getPage() );
 				res.setContentType("html");
 				res.disableCaching();
 				res.send();
 				return;
 			}
 
-			else if (path.element(1).equals("status")) {
-				//This is a request for status information in XML format
-				String studyUID = req.getParameter("study", "");
-				XDSStudyCache cache = XDSStudyCache.getInstance(context);
-				if (cache == null) {
-					//There is no cache for this context, send an empty response
-					res.write( "<Studies/>" );
-				}
-				else {
-					Document doc = null;
-					if (studyUID.equals("")) {
-						//This is a request for status on all active studies
-						doc = cache.getActiveStudiesXML();
-						res.write( XmlUtil.toString(doc.getDocumentElement()) );
-					}
-					else {
-						//This is a request for a status on a single study
-						doc = cache.getStudyXML(studyUID);
-						res.write( XmlUtil.toString(doc.getDocumentElement()) );
-					}
-				}
-				res.setContentType("xml");
-				res.disableCaching();
-				res.send();
-				return;
-			}
 		}
 		//None of the above, treat it as a file request.
 		super.doGet(req, res);
@@ -101,32 +73,45 @@ public class XDSSenderServlet extends Servlet {
 
 	/**
 	 * The servlet method that responds to an HTTP POST.
+	 * @param req The HttpRequest provided by the servlet container.
+	 * @param res The HttpResponse provided by the servlet container.
+	 * @throws Exception if the servlet cannot handle the request.
 	 */
 	public void doPost(HttpRequest req, HttpResponse res) throws Exception {
 
 		//Only accept connections from users with the update privilege
-		if (!req.userHasRole("update")) { res.redirect("/"); return; }
+		if (!req.userHasRole("admin")) { res.redirect("/"); return; }
 
+		String key = req.getParameter("key");
+		if (key != null) {
+			boolean delete = key.equals("0");
+			List<String> studies = req.getParameterValues("study");
+			if (studies != null) {
+				XDSStudyCache cache = XDSStudyCache.getInstance(context);
+				for (String studyUID : studies) {
+					if (delete) cache.deleteStudy(studyUID);
+					else cache.sendStudy(key, studyUID);
+				}
+			}
+		}
 		//Reload the page so the user can see what he did.
-		boolean isEdgeServer = req.getParameter("ui","").equals("ES");
-		res.redirect("/" + context + (isEdgeServer ? "?ui=ES" : ""));
+		res.redirect("/" + context);
 	}
 
-	private String getPage(boolean admin, boolean update, boolean isEdgeServer) {
+	private String getPage() {
 		try {
+			XDSStudyCache cache = XDSStudyCache.getInstance(context);
+			Document activeStudiesDoc = cache.getActiveStudiesXML();
+			Document sentStudiesDoc = cache.getSentStudiesXML();
 			Destinations destinations = Destinations.getInstance(context);
 			Document destinationsDoc = destinations.getDestinationsXML();
-			XDSStudyCache cache = XDSStudyCache.getInstance(context);
-			Document doc = cache.getActiveStudiesXML();
-			String xslPath = isEdgeServer ? "/XDSSenderServletES.xsl" : "/XDSSenderServlet.xsl";
-			Document xsl = XmlUtil.getDocument( FileUtil.getStream( xslPath ) );
+			Document xsl = XmlUtil.getDocument( FileUtil.getStream( "/XDSSenderServlet.xsl" ) );
 			Object[] params = new Object[] {
-				"admin", (admin ? "yes" : "no"),
-				"update", (update ? "yes" : "no"),
-				"isEdgeServer", (isEdgeServer ? "yes" : "no"),
+				"context", context,
+				"sentStudies", sentStudiesDoc,
 				"destinations", destinationsDoc
 			};
-			return XmlUtil.getTransformedText( doc, xsl, params );
+			return XmlUtil.getTransformedText( activeStudiesDoc, xsl, params );
 		}
 		catch (Exception ex) { return "Unable to create the sender page."; }
 	}

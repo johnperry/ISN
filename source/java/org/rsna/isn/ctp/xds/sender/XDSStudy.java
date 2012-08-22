@@ -10,6 +10,7 @@ package org.rsna.isn.ctp.xds.sender;
 import java.io.File;
 import java.io.Serializable;
 import org.apache.log4j.Logger;
+import org.rsna.ctp.objects.*;
 import org.rsna.util.XmlUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -32,38 +33,27 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 	String destination;
 	String patientID;
 	String patientName;
+	String studyDate;
+	String modality;
 
 	/**
 	 * Construct an XDSStudy.
-	 * @param studyUID the StudyInstanceUID
+	 * @param fo the object to be used to index the study
 	 * @param studyDir the directory in which the study's objects are stored
-	 * @param size the number of objects stored for the study
-	 * @param objectsSent the number of objects that have been sent to the Clearinghouse
-	 * @param lastModifiedTime the time the most recent object was stored in studyDir
-	 * @param status the status of the study
-	 * @param destination the destination key selected by the user servlet
-	 * @param patientID the actual PatientID (PHI)
-	 * @param patientName the actual PatientName (PHI)
 	 */
-	public XDSStudy(String studyUID,
-					File studyDir,
-					int size,
-					int objectsSent,
-					long lastModifiedTime,
-					XDSStudyStatus status,
-					String destination,
-					String patientID,
-					String patientName) {
-
-		this.studyUID = studyUID;
+	public XDSStudy(FileObject fo, File studyDir) {
+		this.studyUID = fo.getStudyUID();
 		this.studyDir = studyDir;
-		this.size = size;
-		this.objectsSent = objectsSent;
-		this.lastModifiedTime = lastModifiedTime;
-		this.status = status;
-		this.destination = destination;
-		this.patientID = patientID;
-		this.patientName = patientName;
+		this.size = 0;
+		this.objectsSent = 0;
+		this.lastModifiedTime = 0;
+		this.status = XDSStudyStatus.OPEN;
+		this.destination = null;
+		this.patientID = fo.getPatientID();
+		this.patientName = fo.getPatientName();
+		setStudyDate(fo.getStudyDate());
+		if (fo instanceof DicomObject) this.modality = ((DicomObject)fo).getModality();
+		else this.modality = "";
 	}
 
 	/**
@@ -119,6 +109,29 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 		return patientName;
 	}
 
+	public String getStudyDate() {
+		return studyDate;
+	}
+
+	public void setStudyDate(String date) {
+		if (date == null) this.studyDate = "";
+		else if (date.length() == 8) {
+			this.studyDate =
+				date.substring(0,4) + "."
+					+ date.substring(4,6) + "."
+						+ date.substring(6);
+		}
+		else this.studyDate = date;
+	}
+
+	public String getModality() {
+		return modality;
+	}
+
+	public void setModality(String modality) {
+		this.modality = modality;
+	}
+
 	public void setDestination(String destination) {
 		this.destination = destination;
 	}
@@ -146,6 +159,8 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 			root.setAttribute("status", status.toString());
 			root.setAttribute("patientID", patientID);
 			root.setAttribute("patientName", patientName);
+			root.setAttribute("studyDate", studyDate);
+			root.setAttribute("modality", modality);
 			return doc;
 		}
 		catch (Exception ex) {

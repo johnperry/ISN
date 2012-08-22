@@ -51,7 +51,7 @@ public class XDSDatabase {
 	 * @return the study or null if the studyUID does
 	 * not exist in the database.
 	 */
-	public synchronized XDSStudy getStudy(String studyUID) {
+	public synchronized XDSStudy get(String studyUID) {
 		try { return (XDSStudy)studies.get(studyUID); }
 		catch (Exception ex) { return null; }
 	}
@@ -112,6 +112,39 @@ public class XDSDatabase {
 		}
 		catch (Exception ex) {
 			logger.warn("Unable to list the active studies", ex);
+			return new XDSStudy[0];
+		}
+	}
+
+	/**
+	 * Get an array of studies that have the status QUEUED, INTRANSIT, SUCCESS or FAILED,
+	 * sorted on PatientID.
+	 * @return the sorted list of QUEUED, INTRANSIT, SUCCESS or FAILED studies, or
+	 * an empty array if an error occurs.
+	 */
+	public synchronized XDSStudy[] getSentStudies() {
+		try {
+			XDSStudy study;
+			String key;
+			LinkedList<XDSStudy> list = new LinkedList<XDSStudy>();
+			FastIterator it = studies.keys();
+			while ( (key = (String)it.next()) != null ) {
+				study = (XDSStudy)studies.get(key);
+				XDSStudyStatus status = study.getStatus();
+				if (status.is(XDSStudyStatus.QUEUED)
+					|| status.is(XDSStudyStatus.INTRANSIT)
+						|| status.is(XDSStudyStatus.SUCCESS)
+							|| status.is(XDSStudyStatus.FAILED)) {
+					list.add( study );
+				}
+			}
+			XDSStudy[] array = new XDSStudy[list.size()];
+			array = list.toArray(array);
+			Arrays.sort(array);
+			return array;
+		}
+		catch (Exception ex) {
+			logger.warn("Unable to list the sent studies", ex);
 			return new XDSStudy[0];
 		}
 	}

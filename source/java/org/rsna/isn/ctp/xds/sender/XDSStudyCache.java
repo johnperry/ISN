@@ -8,9 +8,11 @@
 package org.rsna.isn.ctp.xds.sender;
 
 import java.io.File;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.Hashtable;
 import org.apache.log4j.Logger;
-import org.rsna.ctp.objects.FileObject;
+import org.rsna.ctp.objects.*;
 import org.rsna.util.FileUtil;
 import org.rsna.util.XmlUtil;
 import org.w3c.dom.Document;
@@ -28,6 +30,9 @@ public class XDSStudyCache {
 	private File indexRoot;
 	private String context;
 	private XDSDatabase database;
+	private ExecutorService execSvc;
+
+	final int maxThreads = 4;
 
 	/**
 	 * Construct an XDSStudyCache.
@@ -41,6 +46,8 @@ public class XDSStudyCache {
 		this.indexRoot = new File(root, "index");
 		indexRoot.mkdirs();
 		this.database = new XDSDatabase(indexRoot);
+		this.execSvc = Executors.newFixedThreadPool( maxThreads );
+
 	}
 
 	/**
@@ -125,17 +132,16 @@ public class XDSStudyCache {
 		FileUtil.copy(fileObject.getFile(), file);
 
 		//Now update the database so the servlet can track the study.
-		XDSStudy study = database.getStudy(studyUID);
+		XDSStudy study = database.get(studyUID);
 		if (study == null) {
-			study = new XDSStudy(studyUID,
-								 studyDir, //where all the objects for the study are stored
-								 0, //number of objects received for the study (initialize to zero)
-								 0, //number of objects sent to the Clearinghouse (initialize to zero)
-								 0, //last time an object was received for the study (will be updated below)
-								 XDSStudyStatus.OPEN, //whether the study has met the timeout for readiness
-								 null, //the destination key
-								 fo.getPatientID(),
-								 fo.getPatientName());
+			//There is no study for this object, create a new study.
+			study = new XDSStudy(fo, studyDir);
+		}
+		else {
+			//The study exists. Update the modality if it isn't already there
+			if (study.getModality().equals("") && (fo instanceof DicomObject)) {
+				study.setModality( ((DicomObject)fo).getModality() );
+			}
 		}
 		study.setSize(studyDir.listFiles().length); //count the object added to the study
 		study.setLastModifiedTime(); //record the time of this object storage
@@ -178,6 +184,27 @@ public class XDSStudyCache {
 	}
 
 	/**
+	 * Get the database entries for studies that have the status INTRANSIT, SUCCESS or FAILED,
+	 * sorted on PatientID.
+	 */
+	public Document getSentStudiesXML() {
+		try {
+			Document doc = XmlUtil.getDocument();
+			Element root = doc.createElement("Studies");
+			doc.appendChild(root);
+			XDSStudy[] studies = database.getSentStudies();
+			for (XDSStudy study : studies) {
+				root.appendChild( doc.importNode(study.getXML().getDocumentElement(), true) );
+			}
+			return doc;
+		}
+		catch (Exception ex) {
+			logger.warn("Unable to list the active studies");
+			return null;
+		}
+	}
+
+	/**
 	 * Get the database entry for a study in XML format.
 	 * @param studyUID the StudyInstanceUID of the study.
 	 */
@@ -186,7 +213,7 @@ public class XDSStudyCache {
 			Document doc = XmlUtil.getDocument();
 			Element root = doc.createElement("Studies");
 			doc.appendChild(root);
-			XDSStudy study = database.getStudy(studyUID);
+			XDSStudy study = database.get(studyUID);
 			if (study != null) {
 				root.appendChild( doc.importNode(study.getXML().getDocumentElement(), true) );
 			}
@@ -226,6 +253,63 @@ public class XDSStudyCache {
 				FileUtil.deleteAll(dir);
 				database.remove(study);
 			}
+		}
+	}
+
+	/**
+	 * Delete a study.
+	 * @param studyUID the UID of the study to be queued.
+	 */
+	public void deleteStudy(String studyUID) {
+		XDSStudy study = database.get(studyUID);
+		if (study != null) database.remove(study);
+	}
+
+	/**
+	 * Enqueue a study for transmission, changing its status to QUEUED.
+	 * @param key the key identifying the destination.
+	 * @param studyUID the UID of the study to be queued.
+	 */
+	public void sendStudy(String key, String studyUID) {
+		XDSStudy study  = database.get(studyUID);
+		if (study != null) {
+			study.setDestination(key);
+			study.setStatus( XDSStudyStatus.QUEUED );
+			database.put(study);
+			execSvc.execute( new StudySender(studyUID) );
+		}
+	}
+
+	//The thread that sends studies
+	class StudySender extends Thread {
+
+		String studyUID;
+
+		public StudySender(String studyUID) {
+			this.studyUID = studyUID;
+		}
+
+		public void run() {
+			XDSStudy study = database.get(studyUID);
+			if (study != null) {
+				try {
+					Thread.sleep(10000); //wait a bit so we can see the QUEUED status
+
+					study.setStatus(XDSStudyStatus.INTRANSIT);
+					database.put(study);
+					Thread.sleep(10000); //wait a bit so we can see the INTRANSIT status
+
+					long t = System.currentTimeMillis()/1000;
+					if ((t & 1) != 0) study.setStatus( XDSStudyStatus.SUCCESS );
+					else study.setStatus( XDSStudyStatus.FAILED );
+					database.put(study);
+
+				}
+				catch (Exception ex) {
+					logger.warn("Unable to transmit "+study.getStudyUID());
+				}
+			}
+			else logger.warn("Attempt to transmit null study ("+studyUID+")");
 		}
 	}
 

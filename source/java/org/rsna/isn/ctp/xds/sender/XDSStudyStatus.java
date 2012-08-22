@@ -46,6 +46,11 @@ public class XDSStudyStatus implements Serializable {
 	 * Status value indicating that a user has selected a destination key for
 	 * a study and transmission can happen with no further action from the user.
 	 */
+	public static final XDSStudyStatus QUEUED = new XDSStudyStatus("QUEUED");
+
+	/**
+	 * Status value indicating that a study is currently being transmitted.
+	 */
 	public static final XDSStudyStatus INTRANSIT = new XDSStudyStatus("INTRANSIT");
 
 	/**
@@ -70,6 +75,7 @@ public class XDSStudyStatus implements Serializable {
 		name = name.toUpperCase();
 		if (name.equals("OPEN")) return OPEN;
 		if (name.equals("COMPLETE")) return COMPLETE;
+		if (name.equals("QUEUED")) return QUEUED;
 		if (name.equals("INTRANSIT")) return INTRANSIT;
 		if (name.equals("SUCCESS")) return SUCCESS;
 		if (name.equals("FAILED")) return FAILED;

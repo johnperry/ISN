@@ -55,7 +55,7 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		deleteOnTransmission = !element.getAttribute("deleteOnTransmission").equals("no");
 
 		//The objectCacheID is the id of a stage that holds the original (PHI) version of an object.
-		String objectCacheID = element.getAttribute("cacheID").trim();
+		objectCacheID = element.getAttribute("objectCacheID").trim();
 
 		//Important: the servletContext attribute is used both as the context of the servlet in the
 		//server and the index of the studies in the study cache. This makes it possible for the servlet
