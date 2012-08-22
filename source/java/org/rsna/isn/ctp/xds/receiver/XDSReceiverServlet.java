@@ -79,7 +79,7 @@ public class XDSReceiverServlet extends Servlet {
 		String dateofbirth = req.getParameter("dateofbirth", "19460201");
 		String password = req.getParameter("password", "password");
 
-		String key = TransHash.get(usertoken, dateofbirth, password);
+		String key = TransHash.gen(usertoken, dateofbirth, password);
 
 		//For now, just return the key
 		res.write("Key: "+key);

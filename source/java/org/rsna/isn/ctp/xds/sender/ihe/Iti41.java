@@ -87,7 +87,7 @@ public class Iti41
 			// Load Axis 2 configuration
 			//
 
-			InputStream in = Iti41.class.getResourceAsStream("axis2.xml");
+			InputStream in = Iti41.class.getResourceAsStream("/axis2.xml");
 
 			File axis2Xml = File.createTempFile("ctp-xds-sender-axis2-", ".xml");
 			FileOutputStream out = new FileOutputStream(axis2Xml);
@@ -120,24 +120,24 @@ public class Iti41
 
 	/**
 	 * Perform the actual submission to the document repository. Note: to obtain
-	 * an XML dump of the XDS submission set metadata, set the system property 
-	 * &quot;xds-dump-dir&quot; to a directory path. 
+	 * an XML dump of the XDS submission set metadata, set the system property
+	 * &quot;xds-dump-dir&quot; to a directory path.
 	 *
-	 * 
-	 * @param study The study to be submitted. 
+	 *
+	 * @param study The study to be submitted.
 	 * @param hash The hash to assign to the submission.
 	 * @param endpoint The URL of the remote endpoint for the ITI-41 transaction.
 	 * @param sourceId The source id to be used in the ITI-41 transaction.
-	 * @param timeout The timeout (in milliseconds) to be used for the ITI-41 
+	 * @param timeout The timeout (in milliseconds) to be used for the ITI-41
 	 * transaction.
 	 * @param listeners A list of listeners to be notified of events during the
 	 * ITI-41 transaction.
 	 * @param currentIndex The current zero based index of the first file within
-	 * the study.  This parameter is used in the Iti41Event for notifying listeners 
-	 * of submission progress.  
-	 * @param total The total number of files that are going to be submitted.  
-	 * This parameter is used in the Iti41Event for notifying listeners 
-	 * of submission progress.  
+	 * the study.  This parameter is used in the Iti41Event for notifying listeners
+	 * of submission progress.
+	 * @param total The total number of files that are going to be submitted.
+	 * This parameter is used in the Iti41Event for notifying listeners
+	 * of submission progress.
 	 * @return The total number of files submitted in this transaction.
 	 * @throws Exception If there was an error processing the submission set.
 	 */

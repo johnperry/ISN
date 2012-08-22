@@ -68,7 +68,7 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 			logger.warn("Missing servletContext, using \"xds-export\".");
 			servletContext = "xds-export";
 		}
-		studyCache = XDSStudyCache.getInstance(servletContext, root);
+		studyCache = XDSStudyCache.getInstance(servletContext, root, element);
 
 		//Set up the destinations. Like StudyCaches,
 		//Destinations are indexed by servletContext.

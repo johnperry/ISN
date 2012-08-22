@@ -9,6 +9,8 @@ package org.rsna.isn.ctp.xds.sender;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 import org.apache.log4j.Logger;
 import org.rsna.ctp.objects.*;
 import org.rsna.util.XmlUtil;
@@ -95,6 +97,13 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 
 	public File getDirectory() {
 		return studyDir;
+	}
+
+	public List<File> getFiles() {
+		File[] files = studyDir.listFiles();
+		LinkedList<File> list = new LinkedList<File>();
+		for (File file : files) list.add(file);
+		return list;
 	}
 
 	public String getStudyUID() {

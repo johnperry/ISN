@@ -41,8 +41,8 @@ import org.rsna.isn.ctp.xds.sender.ihe.Iti8;
 import org.w3c.dom.Element;
 
 /**
- * XdsSender for RSNA image sharing network. 
- * 
+ * XdsSender for RSNA image sharing network.
+ *
  * @author Wyatt Tellis
  * @version 3.0.0
  */
@@ -65,10 +65,10 @@ public class XdsSender
 
 	/**
 	 * Create an XdsSender instance
-	 * 
+	 *
 	 * @param element The DOM element containing the XdsSender configuration
-	 * 
-	 * @throws URISyntaxException If there was an error reading from the 
+	 *
+	 * @throws URISyntaxException If there was an error reading from the
 	 * configuration
 	 */
 	public XdsSender(Element element) throws URISyntaxException
@@ -79,11 +79,12 @@ public class XdsSender
 		this.iti41SrcId = element.getAttribute("iti41SrcId");
 		this.timeout = NumberUtils.toLong(element.getAttribute("timeout"), 1000);
 
+		logger.warn("XdsSender instantiated");
 	}
 
 	/**
 	 * Add a listener to be notified of events during the submission process
-	 * 
+	 *
 	 * @param listener The listener to be notified. Must not be null.
 	 */
 	public void addXDSSubmissionListener(XdsSubmissionListener listener)
@@ -96,20 +97,24 @@ public class XdsSender
 	}
 
 	/**
-	 * Perform the XDS submission to the clearinghouse. 
-	 * 
-	 * @param files A list of DICOM part 10 files to be submitted. 
+	 * Perform the XDS submission to the clearinghouse.
+	 *
+	 * @param files A list of DICOM part 10 files to be submitted.
 	 * @param hash The hash to associate with the submission.
 	 * @return The status of the submission request.
 	 */
 	public Status submit(List<File> files, String hash)
 	{
+		logger.warn("submit request for "+files.size()+" files. Key = "+hash);
+
 		Collection<DicomStudy> studies;
 
 
 		try
 		{
 			studies = KosGenerator.processFiles(files, listenerList);
+
+			logger.warn("KosGenerator completed processing the files");
 		}
 		catch (Throwable ex)
 		{
@@ -137,8 +142,12 @@ public class XdsSender
 		{
 			try
 			{
-				currentIndex += Iti41.submitDocuments(study, hash, iti41, iti41SrcId, 
+				logger.warn("submitting the documents");
+
+				currentIndex += Iti41.submitDocuments(study, hash, iti41, iti41SrcId,
 						timeout, listenerList, currentIndex, total);
+
+				logger.warn("finished submitting the documents");
 			}
 			catch (Throwable ex)
 			{

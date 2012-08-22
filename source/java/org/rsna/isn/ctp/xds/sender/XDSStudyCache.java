@@ -8,15 +8,18 @@
 package org.rsna.isn.ctp.xds.sender;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.Hashtable;
 import org.apache.log4j.Logger;
 import org.rsna.ctp.objects.*;
+import org.rsna.ctp.pipeline.Status;
 import org.rsna.util.FileUtil;
 import org.rsna.util.XmlUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.rsna.isn.ctp.xds.sender.event.*;
 
 /**
  * A cache for studies.
@@ -26,6 +29,7 @@ public class XDSStudyCache {
 	static final Logger logger = Logger.getLogger(XDSStudyCache.class);
 
 	private static Hashtable<String,XDSStudyCache> caches = new Hashtable<String,XDSStudyCache>();
+	private Element element;
 	private File cacheRoot;
 	private File indexRoot;
 	private String context;
@@ -39,7 +43,8 @@ public class XDSStudyCache {
 	 * @param context
 	 * @param root the root directory of the cache
 	 */
-	protected XDSStudyCache(String context, File root ) {
+	protected XDSStudyCache(String context, File root, Element element) {
+		this.element = element;
 		this.context = context;
 		this.cacheRoot = new File(root, "cache");
 		cacheRoot.mkdirs();
@@ -56,10 +61,10 @@ public class XDSStudyCache {
 	 * @param context
 	 * @param root the root directory of the cache
 	 */
-	public static XDSStudyCache getInstance(String context, File root) {
+	public static XDSStudyCache getInstance(String context, File root, Element element) {
 		XDSStudyCache cache = caches.get(context);
 		if (cache == null) {
-			cache = new XDSStudyCache(context, root);
+			cache = new XDSStudyCache(context, root, element);
 			caches.put(context, cache);
 		}
 		return cache;
@@ -145,6 +150,7 @@ public class XDSStudyCache {
 		}
 		study.setSize(studyDir.listFiles().length); //count the object added to the study
 		study.setLastModifiedTime(); //record the time of this object storage
+		study.setStatus(XDSStudyStatus.OPEN);
 		database.put(study);
 	}
 
@@ -276,40 +282,51 @@ public class XDSStudyCache {
 			study.setDestination(key);
 			study.setStatus( XDSStudyStatus.QUEUED );
 			database.put(study);
-			execSvc.execute( new StudySender(studyUID) );
+			execSvc.execute( new StudySender(study) );
 		}
 	}
 
 	//The thread that sends studies
-	class StudySender extends Thread {
+	class StudySender extends Thread implements XdsSubmissionListener {
 
-		String studyUID;
+		XDSStudy study;
 
-		public StudySender(String studyUID) {
-			this.studyUID = studyUID;
+		public StudySender(XDSStudy study) {
+			this.study = study;
 		}
 
 		public void run() {
-			XDSStudy study = database.get(studyUID);
 			if (study != null) {
 				try {
-					Thread.sleep(10000); //wait a bit so we can see the QUEUED status
-
 					study.setStatus(XDSStudyStatus.INTRANSIT);
 					database.put(study);
-					Thread.sleep(10000); //wait a bit so we can see the INTRANSIT status
 
-					long t = System.currentTimeMillis()/1000;
-					if ((t & 1) != 0) study.setStatus( XDSStudyStatus.SUCCESS );
-					else study.setStatus( XDSStudyStatus.FAILED );
+					XdsSender sender = new XdsSender(element);
+					sender.addXDSSubmissionListener(this);
+					Status status = sender.submit(
+										study.getFiles(),
+										study.getDestination());
+					if (status.equals(Status.OK)) {
+						study.setStatus( XDSStudyStatus.SUCCESS );
+					}
+					else {
+						study.setStatus( XDSStudyStatus.FAILED );
+					}
 					database.put(study);
-
 				}
 				catch (Exception ex) {
 					logger.warn("Unable to transmit "+study.getStudyUID());
 				}
 			}
-			else logger.warn("Attempt to transmit null study ("+studyUID+")");
+			else logger.warn("Attempt to transmit null study");
+		}
+
+		public void eventOccurred(XdsSubmissionEvent event) {
+			if (event instanceof Iti41Event) {
+				int currentImage = ((Iti41Event)event).getCurrentImage();
+				study.setObjectsSent(currentImage);
+				database.put(study);
+			}
 		}
 	}
 
