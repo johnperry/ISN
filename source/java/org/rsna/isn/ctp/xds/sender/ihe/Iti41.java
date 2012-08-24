@@ -57,6 +57,8 @@ import org.rsna.isn.ctp.xds.sender.dicom.DicomSeries;
 import org.rsna.isn.ctp.xds.sender.dicom.DicomStudy;
 import org.rsna.isn.ctp.xds.sender.event.XdsSubmissionListener;
 
+import org.rsna.util.FileUtil;
+
 /**
  * This class implements the ITI-41 (Submit and register document set)
  * transaction.
@@ -82,22 +84,9 @@ public class Iti41
 
 		try
 		{
-
-			//
 			// Load Axis 2 configuration
-			//
-
-			InputStream in = Iti41.class.getResourceAsStream("/axis2.xml");
-
-			File axis2Xml = File.createTempFile("ctp-xds-sender-axis2-", ".xml");
-			FileOutputStream out = new FileOutputStream(axis2Xml);
-
-			IOUtils.copy(in, out);
-			in.close();
-			out.close();
-
+			File axis2Xml = new File("axis2.xml");
 			System.setProperty("axis2.xml", axis2Xml.getCanonicalPath());
-
 
 			File soapDir = new File(System.getProperty("java.io.tmpdir"), "ctp-xds-sender");
 			soapDir.mkdir();
@@ -107,7 +96,6 @@ public class Iti41
 		catch (Throwable ex)
 		{
 			logger.fatal("Unable to initalize Axis 2 configuration.", ex);
-
 			throw new ExceptionInInitializerError(ex);
 		}
 
@@ -148,14 +136,7 @@ public class Iti41
 		SubmitTransactionData tx = new SubmitTransactionData();
 		XdsDocumentInitializer initializer = new XdsDocumentInitializer(study, hash);
 
-
-
-
-		//
 		// Add entry for KOS
-		//
-
-
 		XDSDocument kosDoc =
 				new XDSDocumentFromByteArray(KOS_DESCRIPTOR, study.getKos());
 		String kosUuid = tx.addDocument(kosDoc);
@@ -169,17 +150,11 @@ public class Iti41
 		kosFmt.setSchemeUUID(DICOM_UID_REG_UID);
 		kosEntry.setFormatCode(kosFmt);
 
-
 		kosEntry.setMimeType(KOS_DESCRIPTOR.getMimeType());
 
 		kosEntry.setUniqueId(study.getKosSopInstanceUid());
 
-
-
-		//
 		// Add entries for images
-		//
-
 		for (DicomSeries series : study.getSeries().values())
 		{
 			for (DicomObject object : series.getObjects().values())
@@ -207,12 +182,7 @@ public class Iti41
 			}
 		}
 
-
-
-
-		//
 		// Initialize submission set metadata
-		//
 		SubmissionSetType subSet = tx.getSubmissionSet();
 
 		subSet.setAuthor(initializer.getAuthor());
@@ -229,11 +199,9 @@ public class Iti41
 		subSet.setTitle(XdsUtil.toInternationalString(study.getStudyDescription()));
 		subSet.setUniqueId(UIDUtils.createUID());
 
-
 		ByteArrayProvideAndRegisterDocumentSetTransformer setTransformer =
 				new ByteArrayProvideAndRegisterDocumentSetTransformer();
 		setTransformer.transform(tx.getMetadata());
-
 
 		String debugDirName = System.getProperty("xds-dump-dir");
 		if (StringUtils.isNotBlank(debugDirName))
@@ -260,9 +228,6 @@ public class Iti41
 			}
 		}
 
-
-
-
 		B_Source reg = new B_Source(endpoint);
 		IHESOAP12Sender sender = (IHESOAP12Sender) reg.getSenderClient().getSender();
 
@@ -285,11 +250,8 @@ public class Iti41
 				chMsg = error.getCodeContext();
 				chMsg = StringUtils.removeStart(chMsg,
 						"com.axonmed.xds.registry.exceptions.RegistryException: ");
-
 				break;
 			}
-
-
 			throw new ClearinghouseException("Submission of study "
 					+ study.getStudyUid()
 					+ " failed. Clearinghouse returned error: " + chMsg);

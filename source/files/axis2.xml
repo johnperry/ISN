@@ -18,9 +18,6 @@
   -->
 
 <axisconfig name="AxisJava2.0">
-
-	<!-- Configuration for the Image Sharing Network -->
-
     <!-- ================================================= -->
     <!-- Parameters -->
     <!-- ================================================= -->
@@ -33,7 +30,7 @@
     <!--parameter name="cacheAttachments">true</parameter>
     <parameter name="attachmentDIR"></parameter>
     <parameter name="sizeThreshold">4000</parameter-->
-
+    
     <!--Uncomment if you want to plugin your own attachments lifecycle implementation -->
     <!--<attachmentsLifecycleManager class="org.apache.axiom.attachments.lifecycle.impl.LifecycleManagerImpl"/>-->
 
@@ -43,7 +40,7 @@
     <!--Since in-memory copies of WSDL definitions can be large, some steps can be taken-->
     <!--to reduce the memory needed for the cached WSDL definitions. -->
     <!--parameter name="reduceWSDLMemoryCache">true</parameter-->
-
+                                                       
     <!--This will give out the timout of the configuration contexts, in milliseconds-->
     <parameter name="ConfigContextTimeoutInterval">30000</parameter>
 
@@ -85,7 +82,7 @@
 
     <!-- Following parameter will completely disable REST handling in Axis2-->
     <parameter name="disableREST" locked="false">true</parameter>
-
+    
     <!-- Following parameter will suppress generation of SOAP 1.2 bindings in auto-generated WSDL files -->
     <parameter name="disableSOAP12" locked="true">false</parameter>
 
@@ -94,7 +91,7 @@
     <!--<deployer extension=".jar" directory="servicejars" class="org.apache.axis2.jaxws.framework.JAXWSDeployer"/>-->
 
     <!--<deployer extension=".jsa" directory="rmiservices" class="org.apache.axis2.rmi.deploy.RMIServiceDeployer"/>-->
-
+    
 
     <!-- Following parameter will set the host name for the epr-->
     <!--<parameter name="hostname" locked="true">myhost.com</parameter>-->
@@ -108,7 +105,7 @@
     <!--    <listener class="org.apache.axis2.ObserverIMPL">-->
     <!--        <parameter name="RSS_URL">http://127.0.0.1/rss</parameter>-->
     <!--    </listener>-->
-
+    
     <threadContextMigrators>
         <threadContextMigrator listId="JAXWS-ThreadContextMigrator-List" class="org.apache.axis2.jaxws.addressing.migrator.EndpointContextMapMigrator"/>
     </threadContextMigrators>
@@ -254,7 +251,7 @@
     <!-- This is a sample configuration. It assumes a mail server running in localhost.
          Listener pops  messages that comes to the email address red@localhost. Users
          password is red. Listener connect to the server every 3000 milliseconds.
-         Parameters with "transport." prefix is Axis2 specific. Others are all from Java Mail API.
+         Parameters with "transport." prefix is Axis2 specific. Others are all from Java Mail API. 
          http://people.apache.org/~pzf/SMTPBase64Binding-0.2.html
      -->
     <!-- ================================================= -->
@@ -298,7 +295,7 @@
         <parameter name="PROTOCOL">HTTP/1.1</parameter>
         <parameter name="Transfer-Encoding">chunked</parameter>
     </transportSender>
-
+    
     <!-- Please enable this if you need the java transport -->
     <!-- <transportSender name="java"
                      class="org.apache.axis2.transport.java.JavaTransportSender"/> -->
@@ -393,7 +390,7 @@
             </handler>
          </phase>
 		<phase name="Addressing">
-	        <handler name="AddressingInHandler"
+	        <handler name="AddressingInHandler" 
 				class="org.apache.axis2.handlers.addressing.AddressingInHandler">
 				<order phase="Addressing"/>
 			</handler>
@@ -401,7 +398,7 @@
                      class="org.apache.axis2.dispatchers.AddressingBasedDispatcher">
                 <order phase="Addressing"/>
             </handler>
-			<handler name="AddressingValidationHandler"
+			<handler name="AddressingValidationHandler" 
 				class="org.apache.axis2.handlers.addressing.AddressingValidationHandler">
 				<order phase="Addressing"/>
 			</handler>
@@ -445,7 +442,7 @@
         <phase name="RMPhase"/>
         <phase name="PolicyDetermination"/>
         <phase name="MessageOut">
-			<handler name="AddressingOutHandler"
+			<handler name="AddressingOutHandler" 
 				class="org.apache.axis2.handlers.addressing.AddressingOutHandler">
 				<order phase="MessageOut"/>
 			</handler>
@@ -454,7 +451,7 @@
     </phaseOrder>
     <phaseOrder type="InFaultFlow">
         <phase name="Addressing">
-			<handler name="AddressingInHandler"
+			<handler name="AddressingInHandler" 
 					class="org.apache.axis2.handlers.addressing.AddressingInHandler">
 				<order phase="Addressing"/>
 			</handler>
@@ -497,7 +494,7 @@
         <phase name="RMPhase"/>
         <phase name="PolicyDetermination"/>
         <phase name="MessageOut">
-			<handler name="AddressingOutHandler"
+			<handler name="AddressingOutHandler" 
 				class="org.apache.axis2.handlers.addressing.AddressingOutHandler">
 				<order phase="MessageOut"/>
 			</handler>
