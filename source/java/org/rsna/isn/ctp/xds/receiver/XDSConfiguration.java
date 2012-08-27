@@ -64,16 +64,5 @@ public class XDSConfiguration {
         assigningAuthorityUniversalIDType = element.getAttribute("assigningAuthorityUniversalIDType");
         homeCommunityID = element.getAttribute("homeCommunityID");
         imagesPerRequest= Integer.parseInt(element.getAttribute("imagesPerRequest"));
-
-        String keystorepassword = element.getAttribute("keystorepassword");
-        String truststorepassword = element.getAttribute("truststorepassword");
-
-        File keystore = new File("keystore.jks");
-        System.setProperty("javax.net.ssl.keyStore", keystore.getPath());
-        System.setProperty("javax.net.ssl.keyStorePassword", keystorepassword);
-
-        File truststore = new File( "truststore.jks");
-        System.setProperty("javax.net.ssl.trustStore", truststore.getPath());
-        System.setProperty("javax.net.ssl.trustStorePassword", truststorepassword);
     }
 }

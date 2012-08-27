@@ -1,5 +1,9 @@
 <Configuration log="yes">
-    <Server port="80"/>
+    <Server port="9080"
+    	keystore="keystore.jks"
+    	keystorePassword="edge1234"
+    	truststore="truststore.jks"
+    	truststorePassword="edge1234"/>
     <Pipeline name="Transmitter">
         <DicomImportService
             calledAETTag="00120010"
@@ -40,7 +44,7 @@
             quarantine="quarantines/Transmitter/CachingXDSExportService-RS">
             <Destination
             	name="Trial 1"
-            	key="506ca492555ea57e9ea24cf563c328add9760b68367b2fc0ded838e89c36009d" />
+            	key="92e877c550de0c4cd9fd94f068dcd9e39fff886f58dd0fcfcac0897fe8abb284" />
             <Destination
             	name="Trial 2"
             	key="210238ecf805ea9c01089d5ee377ad22b981582134d9ccaff6ee5c80bfd0a71f" />
@@ -52,6 +56,7 @@
             	key="35b4bd4819fbb26847b02b84333ffcc6fe7706d054d773d90abac374f3e68b53" />
         </CachingXDSExportService>
     </Pipeline>
+    <!-- -->
     <Pipeline name="Receiver">
 		<PollingXDSImportService
 			name="PollingXDSImportService-RR"
@@ -65,11 +70,7 @@
 			assigningAuthorityUniversalID="1.3.6.1.4.1.19376.2.840.1.1.1.1"
 			assigningAuthorityUniversalIDType="ISO"
 			homeCommunityID="rsna.domain&lt;/HomeCommunityId"
-			keystore="keystore.jks"
-			keystorepassword="edge1234"
-			truststore="truststore.jks"
-			truststorepassword="edge1234"
-			siteID="6cc876e0254492ae2a693e6babfc1b0dc9b42bc8bf3cc4e1d2b0f09d5eb2a3b1"
+			siteID="92e877c550de0c4cd9fd94f068dcd9e39fff886f58dd0fcfcac0897fe8abb284"
 			imagesPerRequest="100"
 			servletContext="xds-import" />
         <Processor
@@ -84,4 +85,5 @@
             quarantine="quarantines/Receiver/FileStorageService"
             root="roots/Receiver/FileStorageService"/>
    </Pipeline>
+   <!-- -->
 </Configuration>

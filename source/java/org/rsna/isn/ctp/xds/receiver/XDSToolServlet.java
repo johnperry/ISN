@@ -8,6 +8,7 @@
 package org.rsna.isn.ctp.xds.receiver;
 
 import java.io.File;
+import java.util.GregorianCalendar;
 import org.apache.log4j.Logger;
 import org.rsna.ctp.objects.ZipObject;
 import org.rsna.server.HttpRequest;
@@ -21,12 +22,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * A servlet to allow manual selection of submission sets to
- * retrieve from the clearinghouse.
+ * A servlet to provide a UI for computing keys.
  */
-public class XDSReceiverServlet extends Servlet {
+public class XDSToolServlet extends Servlet {
 
-	static final Logger logger = Logger.getLogger(XDSReceiverServlet.class);
+	static final Logger logger = Logger.getLogger(XDSToolServlet.class);
 
 	/**
 	 * Static init method. Nothing is required; the empty
@@ -36,16 +36,16 @@ public class XDSReceiverServlet extends Servlet {
 	public static void init(File root, String context) { }
 
 	/**
-	 * Construct a XDSReceiverServlet.
+	 * Construct a XDSToolServlet.
 	 * @param root the root directory of the server.
 	 * @param context the path identifying the servlet.
 	 */
-	public XDSReceiverServlet(File root, String context) {
+	public XDSToolServlet(File root, String context) {
 		super(root, context);
 	}
 
 	/**
-	 * Handle requests for the management page.
+	 * Handle requests for the page.
 	 * @param req The HttpRequest provided by the servlet container.
 	 * @param res The HttpResponse provided by the servlet container.
 	 * @throws Exception if the servlet cannot handle the request.
@@ -54,19 +54,16 @@ public class XDSReceiverServlet extends Servlet {
 		Path path = req.getParsedPath();
 		int length = path.length();
 
-		if (req.isFromAuthenticatedUser()) {
-
-			if (length == 1) {
-				//This is a request for the main page
-				res.write( getPage("", "", "", "") );
-				res.setContentType("html");
-				res.disableCaching();
-				res.send();
-				return;
-			}
+		if (length == 1) {
+			//This is a request for the main page
+			res.write( getPage("", "", "", "") );
+			res.setContentType("html");
+			res.disableCaching();
+			res.send();
+			return;
 		}
 
-		//None of the above, treat it as a file request.
+		//Not a page request, treat it as a file request.
 		super.doGet(req, res);
 	}
 
@@ -79,6 +76,8 @@ public class XDSReceiverServlet extends Servlet {
 		String dateofbirth = req.getParameter("dateofbirth", "19460201").trim();
 		String password = req.getParameter("password", "password").trim();
 
+		dateofbirth = fixDOB(dateofbirth);
+
 		String key = TransHash.gen(usertoken, dateofbirth, password);
 
 		res.write( getPage(usertoken, dateofbirth, password, key) );
@@ -86,8 +85,26 @@ public class XDSReceiverServlet extends Servlet {
 		res.send();
 	}
 
+	private String fixDOB(String dob) {
+		String[] x = dob.split("/");
+		if (x.length == 3) {
+			int m = StringUtil.getInt(x[0]);
+			int d = StringUtil.getInt(x[1]);
+			int y = StringUtil.getInt(x[2]);
+			dob = String.format( "%04d%02d%02d", y, m, d);
+		}
+		return dob;
+	}
+
 	private String getPage(String token, String dob, String pw, String key) {
 		try {
+			//Get today's date
+			GregorianCalendar cal = new GregorianCalendar();
+			String today = String.format( "%04d%02d%02d",
+											cal.get(cal.YEAR),
+											(cal.get(cal.MONTH)+1),
+											cal.get(cal.DAY_OF_MONTH) );
+
 			//Make some random tokens
 			StringBuffer tokens = new StringBuffer();
 			for (int i=0; i<25; i++) {
@@ -98,8 +115,9 @@ public class XDSReceiverServlet extends Servlet {
 
 			//Make the page
 			Document doc = getSubmissionSetsDocument();
-			String xslPath = "/XDSReceiverServlet.xsl";
+			String xslPath = "/XDSToolServlet.xsl";
 			String[] params = {
+				"today", today,
 				"token", token,
 				"dob", dob,
 				"pw", pw,
@@ -109,7 +127,10 @@ public class XDSReceiverServlet extends Servlet {
 			Document xsl = XmlUtil.getDocument( FileUtil.getStream( xslPath ) );
 			return XmlUtil.getTransformedText( doc, xsl, params );
 		}
-		catch (Exception ex) { return "Unable to create the receiver page."; }
+		catch (Exception ex) {
+			logger.warn(ex);
+			return "Unable to create the receiver page.";
+		}
 	}
 
 	private Document getSubmissionSetsDocument() {

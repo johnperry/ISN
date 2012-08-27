@@ -100,7 +100,7 @@ public class RetrieveDocuments {
 
             HashMap<String,ArrayList<String>> docList = query18.queryDocuments(input18);
             if (!docList.isEmpty()) {
-                //Retrieve documents by DocumentUniqueIDs (KOS&Report)
+                //Retrieve documents by DocumentUniqueIDs (KOS & Report)
                 ITI43 query43 = new ITI43();
                 ITI43DataType input43 = new ITI43DataType();
 

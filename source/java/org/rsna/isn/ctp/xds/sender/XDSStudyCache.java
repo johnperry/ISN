@@ -290,6 +290,7 @@ public class XDSStudyCache {
 	class StudySender extends Thread implements XdsSubmissionListener {
 
 		XDSStudy study;
+		Timer timer = null;
 
 		public StudySender(XDSStudy study) {
 			this.study = study;
@@ -303,9 +304,11 @@ public class XDSStudyCache {
 
 					XdsSender sender = new XdsSender(element);
 					sender.addXDSSubmissionListener(this);
+					timer = new Timer();
 					Status status = sender.submit(
 										study.getFiles(),
 										study.getDestination());
+					logger.info("XdsSender.submit returned "+status.toString()+" at "+timer.getTimeString());
 					if (status.equals(Status.OK)) {
 						study.setStatus( XDSStudyStatus.SUCCESS );
 					}
@@ -324,9 +327,26 @@ public class XDSStudyCache {
 		public void eventOccurred(XdsSubmissionEvent event) {
 			if (event instanceof Iti41Event) {
 				int currentImage = ((Iti41Event)event).getCurrentImage();
+				logger.info("Iti41Event (currentImage:"+currentImage+") received at "+timer.getTimeString());
 				study.setObjectsSent(currentImage);
 				database.put(study);
 			}
+		}
+	}
+
+	class Timer {
+		long time = 0;
+		public Timer() {
+			reset();
+		}
+		public void reset() {
+			time = System.currentTimeMillis();
+		}
+		public long getTime() {
+			return System.currentTimeMillis() - time;
+		}
+		public String getTimeString() {
+			return getTime() +" ms";
 		}
 	}
 

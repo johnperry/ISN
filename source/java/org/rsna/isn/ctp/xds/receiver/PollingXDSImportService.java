@@ -92,10 +92,13 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 			poller = new Poller();
 			poller.start();
 
+			//Install the helper servlet
+			HttpServer server = config.getServer();
+			ServletSelector selector = server.getServletSelector();
+			selector.addServlet("isn-tool", XDSToolServlet.class);
+
 			//Install the servlet if the context is supplied
 			if (!servletContext.equals("")) {
-				HttpServer server = config.getServer();
-				ServletSelector selector = server.getServletSelector();
 				selector.addServlet(servletContext, XDSReceiverServlet.class);
 			}
 		}
