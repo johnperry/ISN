@@ -32,13 +32,17 @@
 							<xsl:call-template name="StudyHeadings"/>
 							<xsl:for-each select="Study">
 								<xsl:sort select="@patientID"/>
+								<xsl:variable name="modality" select="normalize-space(@modality)"/>
 								<tr>
 									<td class="center"><input type="checkbox" name="study" value="{@studyUID}"/></td>
 									<td><xsl:value-of select="@patientID"/></td>
 									<td><xsl:value-of select="@patientName"/></td>
 									<td><xsl:value-of select="@studyUID"/></td>
 									<td><xsl:value-of select="@studyDate"/></td>
-									<td class="center"><xsl:value-of select="@modality"/></td>
+									<td class="center">
+										<xsl:if test="$modality)"><xsl:value-of select="$modality"/></xsl:if>
+										<xsl:if test="not($modality)">&#160;</xsl:if>
+									</td>
 									<td class="right"><xsl:value-of select="@size"/></td>
 									<td class="center"><xsl:value-of select="@status"/></td>
 								</tr>
@@ -63,12 +67,16 @@
 						<xsl:call-template name="SentStudyHeadings"/>
 						<xsl:for-each select="$sentStudies/Studies/Study">
 							<xsl:sort select="@patientID"/>
+							<xsl:variable name="modality" select="normalize-space(@modality)"/>
 							<tr>
 								<td><xsl:value-of select="@patientID"/></td>
 								<td><xsl:value-of select="@patientName"/></td>
 								<td><xsl:value-of select="@studyUID"/></td>
 								<td><xsl:value-of select="@studyDate"/></td>
-								<td class="center"><xsl:value-of select="@modality"/></td>
+								<td class="center">
+									<xsl:if test="$modality)"><xsl:value-of select="$modality"/></xsl:if>
+									<xsl:if test="not($modality)">&#160;</xsl:if>
+								</td>
 								<td class="right"><xsl:value-of select="@size"/></td>
 								<td class="right"><xsl:value-of select="@objectsSent"/></td>
 								<td class="center"><xsl:value-of select="@status"/></td>

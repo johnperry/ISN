@@ -45,168 +45,170 @@ import org.rsna.isn.ctp.xds.sender.event.XdsSubmissionListener;
 class LazyLoadedXdsDocument extends XDSDocument
 {
 	private final List<XdsSubmissionListener> listeners;
-	
+
 	private final Iti41Event event;
 
-    LazyLoadedXdsDocument(DocumentDescriptor descriptor, 
-			File file, List<XdsSubmissionListener> listeners, 
+	LazyLoadedXdsDocument(DocumentDescriptor descriptor,
+			File file, List<XdsSubmissionListener> listeners,
 			int index, int total)
-    {
-        super(descriptor);
+	{
+		super(descriptor);
 
-        this.file = file;
-		
+		this.file = file;
+
 		this.listeners = listeners;
-		
+
 		this.event = new Iti41Event(file, index + 1, total);
-    }
+	}
 
-    private final File file;
+	private final File file;
 
-    /**
-     * Get the value of file
-     *
-     * @return the value of file
-     */
-    public File getFile()
-    {
-        return file;
-    }
+	/**
+	 * Get the value of file
+	 *
+	 * @return the value of file
+	 */
+	public File getFile()
+	{
+		return file;
+	}
 
-    @Override
-    public InputStream getStream()
-    {
-		synchronized (listeners)
+	@Override
+	public InputStream getStream()
+	{
+		return new AutoCloseInputStream(new LazyOpenFileInputStream(file));
+	}
+
+	private class LazyOpenFileInputStream extends InputStream
+	{
+		private final File file;
+
+		private FileInputStream in = null;
+
+		public LazyOpenFileInputStream(File file)
 		{
-			for (XdsSubmissionListener listener : listeners)
+			this.file = file;
+		}
+
+		@Override
+		public int read(byte[] b, int off, int len) throws IOException
+		{
+			if (in == null)
 			{
-				listener.eventOccurred(event);
+				in = new FileInputStream(file);
+			}
+
+			return in.read(b, off, len);
+		}
+
+		@Override
+		public int read(byte[] b) throws IOException
+		{
+			if (in == null)
+			{
+				in = new FileInputStream(file);
+			}
+
+			return in.read(b);
+		}
+
+		@Override
+		public int read() throws IOException
+		{
+			if (in == null)
+			{
+				in = new FileInputStream(file);
+			}
+
+			return in.read();
+		}
+
+		@Override
+		public int available() throws IOException
+		{
+			if (in == null)
+			{
+				in = new FileInputStream(file);
+			}
+
+			return in.available();
+		}
+
+		@Override
+		public boolean markSupported()
+		{
+			try
+			{
+				if (in == null)
+				{
+					in = new FileInputStream(file);
+				}
+
+				return in.markSupported();
+			}
+			catch (IOException ex)
+			{
+				throw new RuntimeException(ex);
 			}
 		}
-		
-        return new AutoCloseInputStream(new LazyOpenFileInputStream(file));
-    }
 
-    private class LazyOpenFileInputStream extends InputStream
-    {
+		@Override
+		public synchronized void mark(int readlimit)
+		{
+			try
+			{
+				if (in == null)
+				{
+					in = new FileInputStream(file);
+				}
 
-        private final File file;
+				in.mark(readlimit);
+			}
+			catch (IOException ex)
+			{
+				throw new RuntimeException(ex);
+			}
+		}
 
-        private FileInputStream in = null;
+		@Override
+		public synchronized void reset() throws IOException
+		{
+			if (in == null)
+			{
+				in = new FileInputStream(file);
+			}
 
-        public LazyOpenFileInputStream(File file)
-        {
-            this.file = file;
-        }
+			in.reset();
+		}
 
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException
-        {
-            if (in == null)
-            {
-                in = new FileInputStream(file);
-            }
+		@Override
+		public long skip(long n) throws IOException
+		{
+			if (in == null)
+			{
+				in = new FileInputStream(file);
+			}
 
-            return in.read(b, off, len);
-        }
+			return in.skip(n);
+		}
 
-        @Override
-        public int read(byte[] b) throws IOException
-        {
-            if (in == null)
-            {
-                in = new FileInputStream(file);
-            }
+		@Override
+		public void close() throws IOException
+		{
+			if (in != null)
+			{
+				in.close();
 
-            return in.read(b);
-        }
 
-        @Override
-        public int read() throws IOException
-        {
-            if (in == null)
-            {
-                in = new FileInputStream(file);
-            }
+				synchronized (listeners)
+				{
+					for (XdsSubmissionListener listener : listeners)
+					{
+						listener.eventOccurred(event);
+					}
+				}
+			}
+		}
 
-            return in.read();
-        }
-
-        @Override
-        public int available() throws IOException
-        {
-            if (in == null)
-            {
-                in = new FileInputStream(file);
-            }
-
-            return in.available();
-        }
-
-        @Override
-        public boolean markSupported()
-        {
-            try
-            {
-                if (in == null)
-                {
-                    in = new FileInputStream(file);
-                }
-
-                return in.markSupported();
-            }
-            catch (IOException ex)
-            {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        @Override
-        public synchronized void mark(int readlimit)
-        {
-            try
-            {
-                if (in == null)
-                {
-                    in = new FileInputStream(file);
-                }
-
-                in.mark(readlimit);
-            }
-            catch (IOException ex)
-            {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        @Override
-        public synchronized void reset() throws IOException
-        {
-            if (in == null)
-            {
-                in = new FileInputStream(file);
-            }
-
-            in.reset();
-        }
-
-        @Override
-        public long skip(long n) throws IOException
-        {
-            if (in == null)
-            {
-                in = new FileInputStream(file);
-            }
-
-            return in.skip(n);
-        }
-
-        @Override
-        public void close() throws IOException
-        {
-            if (in != null)
-                in.close();
-        }
-
-    }
+	}
 }

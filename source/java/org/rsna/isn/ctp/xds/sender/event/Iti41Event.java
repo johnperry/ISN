@@ -91,7 +91,7 @@ public class Iti41Event implements XdsSubmissionEvent
 	public String toString()
 	{
 		return "Submitting documents. "
-				+ "Processing object " + currentImage + " of " + totalImages + ". "
+				+ "Sent object " + currentImage + " of " + totalImages + ". "
 				+ "File path is: " + file;
 	}
 
