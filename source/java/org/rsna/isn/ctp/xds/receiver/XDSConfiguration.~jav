@@ -26,14 +26,12 @@ package org.rsna.isn.ctp.xds.receiver;
 
 import java.io.File;
 import org.w3c.dom.Element;
-import org.rsna.util.StringUtil;
 
 /**
  * Get values of configuration from Element
  * which can be used by downstream classes
  */
 public class XDSConfiguration {
-    public String rootDir;
     public String registryURL;
     public String repositoryURL;
     public String rad69URL;
@@ -42,7 +40,6 @@ public class XDSConfiguration {
     public String assigningAuthorityUniversalIDType;
     public String homeCommunityID;
     public int imagesPerRequest;
-    public long axisTimeOut;
 
     static XDSConfiguration configuration = null;
     Element element;
@@ -58,7 +55,6 @@ public class XDSConfiguration {
 
     protected XDSConfiguration(Element element) {
         this.element = element;
-        rootDir = element.getAttribute("root");
         rad69URL = element.getAttribute("rad69URL");
 		registryURL = element.getAttribute("registryURL");
         repositoryURL = element.getAttribute("repositoryURL");
@@ -68,6 +64,5 @@ public class XDSConfiguration {
         assigningAuthorityUniversalIDType = element.getAttribute("assigningAuthorityUniversalIDType");
         homeCommunityID = element.getAttribute("homeCommunityID");
         imagesPerRequest= Integer.parseInt(element.getAttribute("imagesPerRequest"));
-        axisTimeOut = StringUtil.getLong(element.getAttribute("timeout"), 120000);
     }
 }

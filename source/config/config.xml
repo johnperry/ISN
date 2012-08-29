@@ -34,29 +34,19 @@
             objectCacheID="ObjectCache-RS"
             minAge="300"
             timeDepth="30"
-
 			iti8Pix="mllps://clearinghouse.lifeimage.com:8888"
 			iti8Reg="mllps://clearinghouse.lifeimage.com:8890"
 			iti41="https://clearinghouse.lifeimage.com/services/xdsrepositoryb"
 			iti41SrcId="1.3.6.1.4.1.19376.2.840.1.1.2.1"
 			timeout="120000"
-
             quarantine="quarantines/Transmitter/CachingXDSExportService-RS">
+
             <Destination
             	name="Trial 1"
-            	key="92e877c550de0c4cd9fd94f068dcd9e39fff886f58dd0fcfcac0897fe8abb284" />
-            <Destination
-            	name="Trial 2"
-            	key="210238ecf805ea9c01089d5ee377ad22b981582134d9ccaff6ee5c80bfd0a71f" />
-            <Destination
-            	name="Trial 3"
-            	key="ecfe702b4fa7ece6f025d313204f87e3d23469b8020698c55cdfacbf31a5524e" />
-            <Destination
-            	name="Trial 4"
-            	key="35b4bd4819fbb26847b02b84333ffcc6fe7706d054d773d90abac374f3e68b53" />
+            	key="871d2ec562ce294726451492eb90430e8245f55763e1b0ad199c074029cbc420" />
+
         </CachingXDSExportService>
     </Pipeline>
-    <!-- -->
     <Pipeline name="Receiver">
 		<PollingXDSImportService
 			name="PollingXDSImportService-RR"
@@ -70,10 +60,11 @@
 			assigningAuthorityUniversalID="1.3.6.1.4.1.19376.2.840.1.1.1.1"
 			assigningAuthorityUniversalIDType="ISO"
 			homeCommunityID="rsna.domain&lt;/HomeCommunityId"
-			siteID="92e877c550de0c4cd9fd94f068dcd9e39fff886f58dd0fcfcac0897fe8abb284"
+			siteID="871d2ec562ce294726451492eb90430e8245f55763e1b0ad199c074029cbc420"
 			imagesPerRequest="100"
+			timeout="120000"
 			servletContext="xds-import" />
-        <Processor
+        <ObjectLogger
             name="ObjectLogger-RR"
             class="org.rsna.ctp.stdstages.ObjectLogger"
             interval="1"
@@ -85,5 +76,4 @@
             quarantine="quarantines/Receiver/FileStorageService"
             root="roots/Receiver/FileStorageService"/>
    </Pipeline>
-   <!-- -->
 </Configuration>

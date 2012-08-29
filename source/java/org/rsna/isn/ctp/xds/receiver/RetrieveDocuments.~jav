@@ -36,6 +36,7 @@ import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
 import org.rsna.isn.ctp.xds.rad69.RegistryErrorList;
+//import org.rsna.isn.ctp.xds.rad69.RegistryResponseType;
 import org.rsna.isn.ctp.xds.rad69.RetrieveDocumentSetRequestType.DocumentRequest;
 import org.rsna.isn.ctp.xds.rad69.RetrieveDocumentSetResponseType;
 import org.rsna.isn.ctp.xds.rad69.RetrieveDocumentSetResponseType.DocumentResponse;
@@ -43,8 +44,8 @@ import org.rsna.isn.ctp.xds.rad69.RetrieveImagingDocumentSetRequestType;
 import org.rsna.isn.ctp.xds.rad69.RetrieveImagingDocumentSetRequestType.StudyRequest;
 import org.rsna.isn.ctp.xds.rad69.RetrieveImagingDocumentSetRequestType.StudyRequest.SeriesRequest;
 import org.rsna.isn.ctp.xds.rad69.RetrieveImagingDocumentSetRequestType.TransferSyntaxUIDList;
-import org.rsna.isn.ctp.xds.rad69.RetrieveImagingDocumentSetRequestType.StudyRequest.SeriesRequest;
-import org.rsna.isn.ctp.xds.rad69.RetrieveImagingDocumentSetRequestType.TransferSyntaxUIDList;
+import org.rsna.isp.rad69.RetrieveImagingDocumentSetRequestType.StudyRequest.SeriesRequest;
+import org.rsna.isp.rad69.RetrieveImagingDocumentSetRequestType.TransferSyntaxUIDList;
 import org.rsna.util.FileUtil;
 import org.rsna.util.XmlUtil;
 import org.w3c.dom.CDATASection;
@@ -64,6 +65,7 @@ public class RetrieveDocuments {
     static final Logger logger = Logger.getLogger(RetrieveDocuments.class);
 
     Map<String, String[]> pcs = new TreeMap();
+
     File queue = null;
     File tmp = null;
     DocSetDB docsetDB = null;
@@ -175,6 +177,9 @@ public class RetrieveDocuments {
     * @return number of images were retrieved
     */
     public int getStudy (DocumentInfo docInfo) {
+        //One study per input
+        int numOfDocs = 0;
+        int totalDocs = 0;
         int imageCounter = 0;
         int imagesOfStudy = 0;
 
@@ -207,7 +212,7 @@ public class RetrieveDocuments {
             TransferSyntaxUIDList transferList = new TransferSyntaxUIDList();
             List<String> transferSyntaxUIDs = transferList.getTransferSyntaxUID();
             transferSyntaxUIDs.add(transferSyntaxUID);
-
+            
             //-- Enable transfer syntax support
             String sopClassUids[] = pcs.keySet().toArray(new String[0]);
             for (String sopClassUid : sopClassUids)
@@ -419,50 +424,5 @@ public class RetrieveDocuments {
         }
         catch (Exception returnUnmodifiedFile) { }
         return file;
-    }
-
-    /**
-     * Load supported Presentation Context/ Transfer Syntax     *
-     */
-    private void getPresentationContext()
-    {
-		FileInputStream in = null;
-        try {
-            Properties props = new Properties();
-            String name = "xds-dicom.properties";
-            File propFile = new File(XDSConfiguration.getInstance().rootDir, name);
-            FileUtil.getFile(propFile, "/"+name);
-            if (propFile.exists())
-            {
-                in = new FileInputStream(propFile);
-                props.load(in);
-            }
-
-            // Setup the presentation contexts
-            for (String sopClass : props.stringPropertyNames())
-            {
-                if (UIDUtils.isValidUID(sopClass))
-                {
-                    String value = props.getProperty(sopClass);
-                    String txUids[] = StringUtils.split(value, ',');
-                    for (int i=0; i<txUids.length; i++)
-                    {
-                        String txUid = txUids[i].trim();
-                        if (UIDUtils.isValidUID(txUid))
-                        {
-                            txUids[i] = txUid;
-                        }
-                        else
-                        {
-                            txUids[i] = "";
-                        }
-                    }
-                    pcs.put(sopClass, txUids);
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Error loading transfer syntaxes: " + e.getMessage());
-        }
-        finally { FileUtil.close(in); }
     }
 }

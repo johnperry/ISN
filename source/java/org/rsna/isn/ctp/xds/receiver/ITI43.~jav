@@ -30,10 +30,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.axis2.AxisFault;
-import org.apache.axis2.client.Options;
 import org.openhealthtools.ihe.common.hl7v2.CX;
 import org.openhealthtools.ihe.common.hl7v2.Hl7v2Factory;
-import org.openhealthtools.ihe.common.ws.IHESOAP12Sender;
 import org.openhealthtools.ihe.xds.consumer.B_Consumer;
 import org.openhealthtools.ihe.xds.consumer.retrieve.DocumentRequestType;
 import org.openhealthtools.ihe.xds.consumer.retrieve.RetrieveDocumentSetRequestType;
@@ -77,9 +75,7 @@ public class ITI43 {
         System.out.println("URI of the XDS Registry - " + repositoryURI.toString());
 
         B_Consumer c = new B_Consumer(repositoryURI);
-        IHESOAP12Sender sender = (IHESOAP12Sender) c.getSenderClient().getSender();
-        Options options = sender.getAxisServiceClient().getOptions();
-        options.setTimeOutInMilliSeconds(XDSConfiguration.getInstance().axisTimeOut);
+        //AtnaAgentFactory.getAtnaAgent().setDoAudit(false);
         CX patientId = Hl7v2Factory.eINSTANCE.createCX();
 
         patientId.setAssigningAuthorityUniversalId(assigningAuthorityUniversalId);

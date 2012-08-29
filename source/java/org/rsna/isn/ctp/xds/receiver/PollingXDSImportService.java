@@ -15,6 +15,7 @@ import org.rsna.ctp.objects.FileObject;
 import org.rsna.ctp.pipeline.AbstractPipelineStage;
 import org.rsna.ctp.pipeline.ImportService;
 import org.rsna.ctp.pipeline.QueueManager;
+import org.rsna.isn.ctp.xds.sender.ihe.SOAPSetup;
 import org.rsna.server.HttpServer;
 import org.rsna.server.ServletSelector;
 import org.rsna.util.StringUtil;
@@ -51,25 +52,29 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 	 */
 	public PollingXDSImportService(Element element) throws Exception {
 		super(element);
-		if (root == null)
-			logger.error(name+": No root directory was specified.");
-		else {
-			temp = new File(root, "xds");
-			temp.mkdirs();
-			File queue = new File(root, "queue");
-			queueManager = new QueueManager(queue, 0, 0); //use default settings
-			active = new File(root, "active");
-			active.mkdirs();
-			activePath = active.getAbsolutePath();
-			queueManager.enqueueDir(active); //requeue any files that are left from an ungraceful shutdown.
+		if (root == null) logger.error(name+": No root directory was specified.");
 
-			//Get the minimum polling interval (in seconds)
-			interval = Math.max(  StringUtil.getInt(element.getAttribute("interval"), interval), interval );
-			interval *= 1000;
+		temp = new File(root, "xds");
+		temp.mkdirs();
+		File queue = new File(root, "queue");
+		queueManager = new QueueManager(queue, 0, 0); //use default settings
+		active = new File(root, "active");
+		active.mkdirs();
+		activePath = active.getAbsolutePath();
+		queueManager.enqueueDir(active); //requeue any files that are left from an ungraceful shutdown.
 
-			//Get the servlet context. This is only used for the clinical receiver, not the research receiver
-			servletContext = element.getAttribute("servletContext").trim();
-		}
+		//Get the minimum polling interval (in seconds)
+		interval = Math.max(  StringUtil.getInt(element.getAttribute("interval"), interval), interval );
+		interval *= 1000;
+
+		//Get the servlet context. This is only used for the clinical receiver, not the research receiver
+		servletContext = element.getAttribute("servletContext").trim();
+
+		//Initialize the SOAP configuration.
+		//Note: This static method only initializes if it hasn't already been done,
+		//so in configurations with multiple stages that call this method, the multiple
+		//calls don't cause a problem.
+		SOAPSetup.init();
 	}
 
 	/**

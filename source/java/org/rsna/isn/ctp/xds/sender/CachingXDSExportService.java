@@ -15,6 +15,7 @@ import org.rsna.ctp.objects.FileObject;
 import org.rsna.ctp.pipeline.AbstractPipelineStage;
 import org.rsna.ctp.pipeline.ExportService;
 import org.rsna.ctp.stdstages.ObjectCache;
+import org.rsna.isn.ctp.xds.sender.ihe.SOAPSetup;
 import org.rsna.server.HttpServer;
 import org.rsna.server.ServletSelector;
 import org.rsna.util.StringUtil;
@@ -48,7 +49,8 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 	public CachingXDSExportService(Element element) throws Exception {
 		super(element);
 		if (root == null) logger.error(name+": No root directory was specified.");
-		else root.mkdirs();
+
+		root.mkdirs();
 
 		minAge = Math.max( StringUtil.getLong(element.getAttribute("minAge")), minAge ) * 1000;
 		timeDepth = StringUtil.getLong(element.getAttribute("timeDepth"));
@@ -70,8 +72,7 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		}
 		studyCache = XDSStudyCache.getInstance(servletContext, root, element);
 
-		//Set up the destinations. Like StudyCaches,
-		//Destinations are indexed by servletContext.
+		//Set up the destinations. Like StudyCaches, Destinations are indexed by servletContext.
 		destinations = Destinations.getInstance(servletContext);
 		destinations.clear();
 		NodeList nl = element.getElementsByTagName("Destination");
@@ -79,6 +80,12 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 			Element d = (Element)nl.item(i);
 			destinations.put( new Destination( d.getAttribute("key").trim(), d.getAttribute("name").trim() ) );
 		}
+
+		//Initialize the SOAP configuration.
+		//Note: This static method only initializes if it hasn't already been done,
+		//so in configurations with multiple stages that call this method, the multiple
+		//calls don't cause a problem.
+		SOAPSetup.init();
 	}
 
 	/**

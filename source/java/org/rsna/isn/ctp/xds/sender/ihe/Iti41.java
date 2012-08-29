@@ -36,7 +36,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.util.UIDUtils;
-import org.openhealthtools.ihe.atna.auditor.XDSAuditor;
 import org.openhealthtools.ihe.common.ws.IHESOAP12Sender;
 import org.openhealthtools.ihe.xds.document.DocumentDescriptor;
 import org.openhealthtools.ihe.xds.document.XDSDocument;
@@ -77,30 +76,6 @@ public class Iti41
 
 	private static final DocumentDescriptor KOS_DESCRIPTOR =
 			new DocumentDescriptor("KOS", "application/dicom-kos");
-
-	static
-	{
-		XDSAuditor.getAuditor().getConfig().setAuditorEnabled(false);
-
-		try
-		{
-			// Load Axis 2 configuration
-			File axis2Xml = new File("axis2.xml");
-			System.setProperty("axis2.xml", axis2Xml.getCanonicalPath());
-
-			File soapDir = new File(System.getProperty("java.io.tmpdir"), "ctp-xds-sender");
-			soapDir.mkdir();
-
-			System.setProperty("ihe.soap.tmpdir", soapDir.getCanonicalPath());
-		}
-		catch (Throwable ex)
-		{
-			logger.fatal("Unable to initalize Axis 2 configuration.", ex);
-			throw new ExceptionInInitializerError(ex);
-		}
-
-		System.setProperty("use.http.chunking", "true");
-	}
 
 	private Iti41()
 	{
