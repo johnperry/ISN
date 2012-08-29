@@ -43,7 +43,10 @@
 
             <Destination
             	name="Trial 1"
-            	key="871d2ec562ce294726451492eb90430e8245f55763e1b0ad199c074029cbc420" />
+            	key="2ab11c882d0add2451541bc1e44f9ba5e515d80349844e4166c9e3a6a38bf3ef"
+            	token="ugeind"
+            	dob="20120829"
+            	pw="oinkoink"/>
 
         </CachingXDSExportService>
     </Pipeline>
@@ -60,7 +63,7 @@
 			assigningAuthorityUniversalID="1.3.6.1.4.1.19376.2.840.1.1.1.1"
 			assigningAuthorityUniversalIDType="ISO"
 			homeCommunityID="rsna.domain&lt;/HomeCommunityId"
-			siteID="871d2ec562ce294726451492eb90430e8245f55763e1b0ad199c074029cbc420"
+			siteID="2ab11c882d0add2451541bc1e44f9ba5e515d80349844e4166c9e3a6a38bf3ef"
 			imagesPerRequest="100"
 			timeout="120000"
 			servletContext="xds-import" />

@@ -21,7 +21,7 @@ public class SOAPSetup {
 	 */
 	public static void init() {
 		String axis2Prop = System.getProperty("axis2.xml");
-		if ((axis2Prop != null) && !axis2Prop.trim().equals("")) {
+		if ((axis2Prop == null) || axis2Prop.trim().equals("")) {
 
 			//The property hasn't already been set, so do all the setup.
 
