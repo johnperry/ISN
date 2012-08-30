@@ -422,7 +422,7 @@ public class RetrieveDocuments {
     }
 
     /**
-     * Load supported Presentation Context/ Transfer Syntax     *
+     * Load supported Presentation Context/ Transfer Syntax
      */
     private void getPresentationContext()
     {

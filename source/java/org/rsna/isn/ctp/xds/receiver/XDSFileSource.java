@@ -38,7 +38,7 @@ public class XDSFileSource {
 	boolean test = false;
 
     /**
-	 * Construct a XDSFileSource.
+	 * Construct an XDSFileSource.
 	 * @param element the configuration element of the parent stage
 	 * @param dir a directory for use in receiving files
 	 */
