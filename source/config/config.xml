@@ -1,5 +1,5 @@
 <Configuration log="yes">
-    <Server port="80"
+    <Server port="9080"
     	keystore="keystore.jks"
     	keystorePassword="edge1234"
     	truststore="truststore.jks"
@@ -19,6 +19,11 @@
             class="org.rsna.ctp.stdstages.ObjectCache"
             id="ObjectCache-RS"
             root="roots/Transmitter/ObjectCache-RS" />
+        <ObjectLogger
+            name="ObjectLogger-RS-PHI"
+            class="org.rsna.ctp.stdstages.ObjectLogger"
+            interval="1"
+            verbose="yes" />
         <DicomAnonymizer
             class="org.rsna.ctp.stdstages.DicomAnonymizer"
             lookupTable="scripts/lookup-table.properties"
@@ -26,6 +31,11 @@
             quarantine="quarantines/Transmitter/DicomAnonymizer"
             root="roots/Transmitter/DicomAnonymizer"
             script="scripts/Transmitter.script"/>
+        <ObjectLogger
+            name="ObjectLogger-RS"
+            class="org.rsna.ctp.stdstages.ObjectLogger"
+            interval="1"
+            verbose="yes" />
         <CachingXDSExportService
         	servletContext="xds-export"
             name="CachingXDSExportService-RS"
@@ -42,10 +52,10 @@
             quarantine="quarantines/Transmitter/CachingXDSExportService-RS">
 
             <Destination
-            	name="Trial 1"
-            	key="989fdeeee84cfd9915f9ee5e9f296e1ed78b6f7474d485963cb96b746f6d398d"
-            	token="6teh9g"
-            	dob="20120828"
+            	name="Trial Q"
+            	key="f095e8c5bbeb1c778458545573220463796ddb87f70cd8449909c76d5002bcd6"
+            	token="awr6dx"
+            	dob="20120904"
             	pw="quackquack"/>
 
         </CachingXDSExportService>
@@ -63,7 +73,7 @@
 			assigningAuthorityUniversalID="1.3.6.1.4.1.19376.2.840.1.1.1.1"
 			assigningAuthorityUniversalIDType="ISO"
 			homeCommunityID="rsna.domain&lt;/HomeCommunityId"
-			siteID="989fdeeee84cfd9915f9ee5e9f296e1ed78b6f7474d485963cb96b746f6d398d"
+			siteID="f095e8c5bbeb1c778458545573220463796ddb87f70cd8449909c76d5002bcd6"
 			imagesPerRequest="100"
 			timeout="120000"
 			servletContext="xds-import" />

@@ -251,7 +251,7 @@ public class RetrieveDocuments {
                         int requestCounter = 0;
                         Iterator imagesItr = sopInstanceUIDList.iterator();
                         /*
-                         * Send request with X number of images each time                         *
+                         * Send request with X number of images each time
                          */
                         while (imagesItr.hasNext()){
                             documentUniqueId = (String) imagesItr.next();
@@ -301,13 +301,13 @@ public class RetrieveDocuments {
                                         File dcmFile = null;
                                         try {
                                             dcmFile = new File(tmp, filename + ".dcm");
-                                        } catch (Exception e) {
-                                            logger.error("Error save file for studyUID#" + studyInstanceUID, e);
-                                        }
-
-                                        fos = new FileOutputStream(dcmFile);
-                                        dh.writeTo(fos);
-                                        fos.close();
+											fos = new FileOutputStream(dcmFile);
+											dh.writeTo(fos);
+											fos.close();
+											logger.info("saved "+dcmFile);
+                                       } catch (Exception e) {
+                                            logger.error("Error saving file for studyUID#" + studyInstanceUID, e);
+                                       }
                                     }
 
                                     /*

@@ -102,7 +102,8 @@
 	            <attribute name="Description" value="${description}"/>
 			</manifest>
 			<fileset dir="${ctp}/build"
-				includes="org/rsna/installer/Installer** CTP/**"/>
+				includes="org/rsna/installer/Installer** CTP/**"
+				excludes="CTP/log4j.properties"/>
 			<fileset dir="${build}"
 				includes="CTP/** config/**"/>
 		</jar>

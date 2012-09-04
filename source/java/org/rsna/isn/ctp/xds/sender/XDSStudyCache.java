@@ -326,9 +326,14 @@ public class XDSStudyCache {
 
 		public void eventOccurred(XdsSubmissionEvent event) {
 			if (event instanceof Iti41Event) {
-				int currentImage = ((Iti41Event)event).getCurrentImage();
-				logger.info("Iti41Event (currentImage:"+currentImage+") received at "+timer.getTimeString());
-				study.setObjectsSent(currentImage);
+				Iti41Event e = (Iti41Event)event;
+				int ci = e.getCurrentImage();
+				int ni = e.getTotalImages();
+				File f = e.getFile();
+				String fn = (f != null) ? f.getName() : "null";
+				String t = timer.getTimeString();
+				logger.info("Iti41Event (currentImage:"+ci+"/"+ni+") received at "+t+" ["+fn+"]");
+				study.setObjectsSent(ci);
 				database.put(study);
 			}
 		}

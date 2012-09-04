@@ -95,34 +95,34 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 		return objectsSent;
 	}
 
-	public File getDirectory() {
+	public synchronized File getDirectory() {
 		return studyDir;
 	}
 
-	public List<File> getFiles() {
+	public synchronized List<File> getFiles() {
 		File[] files = studyDir.listFiles();
 		LinkedList<File> list = new LinkedList<File>();
 		for (File file : files) list.add(file);
 		return list;
 	}
 
-	public String getStudyUID() {
+	public synchronized String getStudyUID() {
 		return studyUID;
 	}
 
-	public String getPatientID() {
+	public synchronized String getPatientID() {
 		return patientID;
 	}
 
-	public String getPatientName() {
+	public synchronized String getPatientName() {
 		return patientName;
 	}
 
-	public String getStudyDate() {
+	public synchronized String getStudyDate() {
 		return studyDate;
 	}
 
-	public void setStudyDate(String date) {
+	public synchronized void setStudyDate(String date) {
 		if (date == null) this.studyDate = "";
 		else if (date.length() == 8) {
 			this.studyDate =
@@ -133,31 +133,31 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 		else this.studyDate = date;
 	}
 
-	public String getModality() {
+	public synchronized String getModality() {
 		return modality;
 	}
 
-	public void setModality(String modality) {
+	public synchronized void setModality(String modality) {
 		this.modality = modality;
 	}
 
-	public void setDestination(String destination) {
+	public synchronized void setDestination(String destination) {
 		this.destination = destination;
 	}
 
-	public String getDestination() {
+	public synchronized String getDestination() {
 		return destination;
 	}
 
-	public XDSStudyStatus getStatus() {
+	public synchronized XDSStudyStatus getStatus() {
 		return status;
 	}
 
-	public void setStatus(XDSStudyStatus status) {
+	public synchronized void setStatus(XDSStudyStatus status) {
 		this.status = status;
 	}
 
-	public Document getXML() {
+	public synchronized Document getXML() {
 		try {
 			Document doc = XmlUtil.getDocument();
 			Element root = doc.createElement("Study");
@@ -179,7 +179,7 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 	}
 
 	public int compareTo(XDSStudy s) {
-		return patientID.compareTo(s.getPatientID());
+		return getPatientID().compareTo(s.getPatientID());
 	}
 
 }
