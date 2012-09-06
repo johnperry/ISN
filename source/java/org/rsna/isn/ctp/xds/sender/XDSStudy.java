@@ -33,10 +33,12 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 	long lastModifiedTime;
 	XDSStudyStatus status;
 	String destination;
+	String destinationName;
 	String patientID;
 	String patientName;
 	String studyDate;
 	String modality;
+	String bodypart;
 
 	/**
 	 * Construct an XDSStudy.
@@ -54,8 +56,17 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 		this.patientID = fo.getPatientID();
 		this.patientName = fo.getPatientName();
 		setStudyDate(fo.getStudyDate());
-		if (fo instanceof DicomObject) this.modality = ((DicomObject)fo).getModality();
-		else this.modality = "";
+		if (fo instanceof DicomObject) {
+			DicomObject dob = (DicomObject)fo;
+			this.modality = dob.getModality();
+			this.bodypart = dob.getBodyPartExamined();
+		}
+		else {
+			this.modality = "";
+			this.bodypart = "";
+		}
+		this.destination = "";
+		this.destinationName = "";
 	}
 
 	/**
@@ -133,6 +144,10 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 		else this.studyDate = date;
 	}
 
+	public synchronized String getBodyPart() {
+		return bodypart;
+	}
+
 	public synchronized String getModality() {
 		return modality;
 	}
@@ -147,6 +162,14 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 
 	public synchronized String getDestination() {
 		return destination;
+	}
+
+	public synchronized void setDestinationName(String destinationName) {
+		this.destinationName = destinationName;
+	}
+
+	public synchronized String getDestinationName() {
+		return destinationName;
 	}
 
 	public synchronized XDSStudyStatus getStatus() {
@@ -170,6 +193,9 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 			root.setAttribute("patientName", patientName);
 			root.setAttribute("studyDate", studyDate);
 			root.setAttribute("modality", modality);
+			root.setAttribute("bodypart", bodypart);
+			root.setAttribute("destination", destination);
+			root.setAttribute("destinationName", destinationName);
 			return doc;
 		}
 		catch (Exception ex) {

@@ -62,7 +62,7 @@ public class Destinations {
 	/**
 	 * Close the database.
 	 */
-	public void close() {
+	public synchronized void close() {
 		//Not required in this implementation.
 		//Would be required if we switch to an
 		//actual database implementation.
@@ -74,7 +74,7 @@ public class Destinations {
 	 * this method always returns true, indicating that
 	 * it is acceptable to shut down.
 	 */
-	public boolean isClosed() {
+	public synchronized boolean isClosed() {
 		return true;
 	}
 
@@ -83,6 +83,13 @@ public class Destinations {
 	 */
 	public void put(Destination destination) {
 		database.put(destination.key, destination);
+	}
+
+	/**
+	 * Get a Destination from the table, indexing by the key.
+	 */
+	public Destination get(String key) {
+		return database.get(key);
 	}
 
 	/**

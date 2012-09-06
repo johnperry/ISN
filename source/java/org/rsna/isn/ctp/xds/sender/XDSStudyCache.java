@@ -280,6 +280,10 @@ public class XDSStudyCache {
 		XDSStudy study  = database.get(studyUID);
 		if (study != null) {
 			study.setDestination(key);
+			String destinationName = "";
+			try {  destinationName = Destinations.getInstance(context).get(key).getName(); }
+			catch (Exception notThere) { }
+			study.setDestinationName(destinationName);
 			study.setStatus( XDSStudyStatus.QUEUED );
 			database.put(study);
 			execSvc.execute( new StudySender(study) );

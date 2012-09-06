@@ -83,7 +83,7 @@ public class XDSSenderServlet extends Servlet {
 		if (!req.userHasRole("admin")) { res.redirect("/"); return; }
 
 		String key = req.getParameter("key");
-		if (key != null) {
+		if ((key != null) && !key.trim().equals("")) {
 			boolean delete = key.equals("0");
 			List<String> studies = req.getParameterValues("study");
 			if (studies != null) {
