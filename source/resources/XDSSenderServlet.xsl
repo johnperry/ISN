@@ -10,6 +10,10 @@
 	<html>
 		<head>
 			<link rel="Stylesheet" type="text/css" media="all" href="/XDSServlet.css"></link>
+			<script>var context = "<xsl:value-of select="$context"/>";</script>
+			<script language="JavaScript" type="text/javascript" src="/JSUtil.js">;</script>
+			<script language="JavaScript" type="text/javascript" src="/JSAJAX.js">;</script>
+			<script language="JavaScript" type="text/javascript" src="/XDSSenderServlet.js">;</script>
 			<title>Send Studies</title>
 		</head>
 		<body>
@@ -59,7 +63,7 @@
 				<hr/>
 				<h2>Sent Studies</h2>
 				<p>
-					<table border="1">
+					<table id="SentStudiesTable" border="1">
 						<xsl:call-template name="SentStudyHeadings"/>
 						<xsl:for-each select="$sentStudies/Studies/Study">
 							<xsl:sort select="@patientID"/>

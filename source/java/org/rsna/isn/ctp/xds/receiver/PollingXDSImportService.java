@@ -15,6 +15,7 @@ import org.rsna.ctp.objects.FileObject;
 import org.rsna.ctp.pipeline.AbstractPipelineStage;
 import org.rsna.ctp.pipeline.ImportService;
 import org.rsna.ctp.pipeline.QueueManager;
+import org.rsna.isn.ctp.ISNRoles;
 import org.rsna.isn.ctp.xds.sender.ihe.SOAPSetup;
 import org.rsna.server.HttpServer;
 import org.rsna.server.ServletSelector;
@@ -106,6 +107,9 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 			if (!servletContext.equals("")) {
 				selector.addServlet(servletContext, XDSReceiverServlet.class);
 			}
+
+			//Install the ISN roles and ensure that the admin user has them.
+			ISNRoles.init();
 		}
 		catch (Exception ex) {
 			logger.warn("Unable to start the stage", ex);

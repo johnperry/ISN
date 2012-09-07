@@ -55,12 +55,20 @@ public class XDSSenderServlet extends Servlet {
 		Path path = req.getParsedPath();
 		int length = path.length();
 
-		if (req.isFromAuthenticatedUser() && req.userHasRole("admin")) {
+		if (req.userHasRole("export")) {
 
 			if (length == 1) {
-				//This is a request for the management page
-				res.write( getPage() );
-				res.setContentType("html");
+				if (req.getParameter("update", "").equals("SentStudiesTable")) {
+					//This is an AJAX request to update a part of the window
+					res.write( getSentStudiesTable() );
+					res.setContentType("xml");
+					logger.info("update request serviced");
+				}
+				else {
+					//This is a request for the main servlet page
+					res.write( getPage() );
+					res.setContentType("html");
+				}
 				res.disableCaching();
 				res.send();
 				return;
@@ -79,8 +87,8 @@ public class XDSSenderServlet extends Servlet {
 	 */
 	public void doPost(HttpRequest req, HttpResponse res) throws Exception {
 
-		//Only accept connections from users with the update privilege
-		if (!req.userHasRole("admin")) { res.redirect("/"); return; }
+		//Only accept connections from users with the export privilege
+		if (!req.userHasRole("export")) { res.redirect("/"); return; }
 
 		String key = req.getParameter("key");
 		if ((key != null) && !key.trim().equals("")) {
@@ -96,6 +104,16 @@ public class XDSSenderServlet extends Servlet {
 		}
 		//Reload the page so the user can see what he did.
 		res.redirect("/" + context);
+	}
+
+	private String getSentStudiesTable() {
+		try {
+			XDSStudyCache cache = XDSStudyCache.getInstance(context);
+			Document sentStudiesDoc = cache.getSentStudiesXML();
+			Document xsl = XmlUtil.getDocument( FileUtil.getStream( "/XDSSenderServletUpdate.xsl" ) );
+			return XmlUtil.getTransformedText( sentStudiesDoc, xsl, null );
+		}
+		catch (Exception ex) { return "Unable to create the sender page."; }
 	}
 
 	private String getPage() {

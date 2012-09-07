@@ -54,7 +54,7 @@ public class XDSReceiverServlet extends Servlet {
 		Path path = req.getParsedPath();
 		int length = path.length();
 
-		if (req.isFromAuthenticatedUser()) {
+		if (req.userHasRole("import")) {
 
 			if (length == 1) {
 				//This is a request for the main page
@@ -74,6 +74,9 @@ public class XDSReceiverServlet extends Servlet {
 	 * The servlet method that responds to an HTTP POST.
 	 */
 	public void doPost(HttpRequest req, HttpResponse res) throws Exception {
+
+		//Only accept connections from users with the import privilege
+		if (!req.userHasRole("import")) { res.redirect("/"); return; }
 
 		String usertoken = req.getParameter("usertoken", "usertoken").trim();
 		String dateofbirth = req.getParameter("dateofbirth", "19460201").trim();

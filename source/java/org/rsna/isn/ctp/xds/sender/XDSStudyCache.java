@@ -285,6 +285,7 @@ public class XDSStudyCache {
 			catch (Exception notThere) { }
 			study.setDestinationName(destinationName);
 			study.setStatus( XDSStudyStatus.QUEUED );
+			study.setObjectsSent(0);
 			database.put(study);
 			execSvc.execute( new StudySender(study) );
 		}

@@ -15,6 +15,7 @@ import org.rsna.ctp.objects.FileObject;
 import org.rsna.ctp.pipeline.AbstractPipelineStage;
 import org.rsna.ctp.pipeline.ExportService;
 import org.rsna.ctp.stdstages.ObjectCache;
+import org.rsna.isn.ctp.ISNRoles;
 import org.rsna.isn.ctp.xds.sender.ihe.SOAPSetup;
 import org.rsna.server.HttpServer;
 import org.rsna.server.ServletSelector;
@@ -107,6 +108,9 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		HttpServer server = config.getServer();
 		ServletSelector selector = server.getServletSelector();
 		selector.addServlet(servletContext, XDSSenderServlet.class);
+
+		//Install the ISN roles and ensure that the admin user has them.
+		ISNRoles.init();
 
 		//Create and start the monitor thread
 		monitor = new MonitorThread();
