@@ -74,7 +74,7 @@ public class ITI43 {
         } catch (URISyntaxException e3) {
             logger.error("iti43 - " + e3.getMessage());
         }
-        System.out.println("URI of the XDS Registry - " + repositoryURI.toString());
+        logger.debug("URI of the XDS Registry - " + repositoryURI.toString());
 
         B_Consumer c = new B_Consumer(repositoryURI);
         IHESOAP12Sender sender = (IHESOAP12Sender) c.getSenderClient().getSender();

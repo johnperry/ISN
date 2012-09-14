@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <!--
   ~ Licensed to the Apache Software Foundation (ASF) under one
   ~ or more contributor license agreements. See the NOTICE file
@@ -16,7 +17,6 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-
 <axisconfig name="AxisJava2.0">
     <!-- ================================================= -->
     <!-- Parameters -->
@@ -183,7 +183,7 @@
     <!-- ================================================= -->
     <!-- Use the following pattern to configure this axis2
          instance to act in particular roles. Note that in
-         the absence of any configuration, Axis2 will act 
+         the absence of any configuration, Axis2 will act
          only in the ultimate receiver role -->
     <!--
     <SOAPRoleConfiguration isUltimateReceiver="true">

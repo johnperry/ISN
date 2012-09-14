@@ -62,7 +62,6 @@ public class XDSSenderServlet extends Servlet {
 					//This is an AJAX request to update a part of the window
 					res.write( getSentStudiesTable() );
 					res.setContentType("xml");
-					logger.info("update request serviced");
 				}
 				else {
 					//This is a request for the main servlet page

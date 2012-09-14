@@ -83,11 +83,11 @@ public class XDSFileSource {
 				//get images for each study
 				int numOfDocs = 0;
 				for (DocumentInfo docInfo : docInfoList) {
-					logger.info("About to retrieve study: "+docInfo.getDocumentUniqueID());
+					logger.debug("About to retrieve study: "+docInfo.getDocumentUniqueID());
 					numOfDocs += retrieveDocuments.getStudy(docInfo);
-					logger.info("...done retrieving "+docInfo.getDocumentUniqueID());
+					logger.debug("...done retrieving "+docInfo.getDocumentUniqueID());
 				}
-				logger.info("-----------------Clearinghouse polling complete: "+t.getElapsedTime());
+				logger.debug("-----------------Clearinghouse polling complete: "+t.getElapsedTime());
 
 				if (numOfDocs > 0){
 					files = queue.listFiles();

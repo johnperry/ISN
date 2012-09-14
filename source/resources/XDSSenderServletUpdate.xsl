@@ -42,7 +42,7 @@
 	<xsl:variable name="modality" select="normalize-space(@modality)"/>
 	<xsl:variable name="bodypart" select="normalize-space(@bodypart)"/>
 	<td class="center">
-		<xsl:if test="$modality)">
+		<xsl:if test="$modality">
 			<xsl:value-of select="$modality"/>
 			<xsl:if test="$bodypart">
 				<xsl:text> - </xsl:text>

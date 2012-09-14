@@ -82,7 +82,7 @@ public class ReadKOS {
                 if (tagVR.equals("SQ")) {
                     if (element.hasItems()) {
                         int num = element.countItems();
-                        System.out.println(tagAddr +" ["+  tagVR +"] "+ tagName + " size= " + num);
+                        //System.out.println(tagAddr +" ["+  tagVR +"] "+ tagName + " size= " + num);
                         for (int i=0; i<num; i++) {
                             DicomObject object1 = element.getDicomObject(i);
                             Iterator<DicomElement> iter1 = object1.datasetIterator();

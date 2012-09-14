@@ -23,15 +23,15 @@ public class DocSetDB {
 	File dir = null; //A temp directory for internal use
 	RecordManager recman = null;
 	HTree index = null;
-	boolean test = false;
+	boolean acceptAlways = false;
 
 	/**
 	 * Construct a DocSetDB.
 	 * @param dir the directory in which to create the database
 	 */
-	public DocSetDB( File dir, boolean test) {
+	public DocSetDB( File dir, boolean acceptAlways) {
 		this.dir = dir;
-		this.test = test;
+		this.acceptAlways = acceptAlways;
 		dir.mkdirs();
 		File db = new File(dir, "docsetIDs");
 		getIndex(db.getPath());
@@ -53,7 +53,7 @@ public class DocSetDB {
 	 * See if an document set ID is in the database.
 	 */
 	public boolean contains(String id) {
-		if (test) return false;
+		if (acceptAlways) return false;
 		try { return (index.get(id) != null); }
 		catch (Exception notThere) { return false; }
 	}

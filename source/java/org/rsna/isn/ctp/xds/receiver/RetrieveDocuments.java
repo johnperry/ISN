@@ -120,7 +120,7 @@ public class RetrieveDocuments {
                     String submissionSetID = (String) ssItr.next();
                     //if the submissionID has been retrieved, then go to next one
                     if (!docsetDB.contains(submissionSetID)) {
-                        logger.info("Get documents for submissionSetID " + submissionSetID);
+                        logger.debug("Get documents for submissionSetID " + submissionSetID);
 
                         //get all documents under this submissionSetID and store in tmp folder
                         Iterator<String> docItr = docList.get(submissionSetID).iterator();
@@ -282,7 +282,7 @@ public class RetrieveDocuments {
                                 if (responseList.isEmpty()) {
                                     status = dsResponse.getRegistryResponse().getStatus();
                                     System.out.println("NO DOCUMENTS FOUND " + status);
-                                    logger.info("Registry response for this query is " + status);
+                                    logger.debug("Registry response for this query is " + status);
                                 }
                                 else
                                 {
@@ -304,7 +304,7 @@ public class RetrieveDocuments {
 											fos = new FileOutputStream(dcmFile);
 											dh.writeTo(fos);
 											fos.close();
-											logger.info("saved "+dcmFile);
+											logger.debug("saved "+dcmFile);
                                        } catch (Exception e) {
                                             logger.error("Error saving file for studyUID#" + studyInstanceUID, e);
                                        }
@@ -353,14 +353,14 @@ public class RetrieveDocuments {
 
         	Timer t = new Timer();
 			org.rsna.isn.ctp.xds.rad69.ImagingDocumentSourcePortType port = service.getImagingDocumentSourcePortSoap12(feature);
-        	logger.info("getImagingDocumentSourcePortSoap12: " + t.getElapsedTime());
+        	logger.debug("getImagingDocumentSourcePortSoap12: " + t.getElapsedTime());
 
             Map<String, Object> ctxt = ((BindingProvider) port).getRequestContext();
             ctxt.put("com.sun.xml.internal.ws.transport.http.client.streaming.chunk.size", 1048576);
 
 			t.reset();
 			imagingDocumentSet = port.imagingDocumentSourceRetrieveImagingDocumentSet(body);
-        	logger.info("imagingDocumentSourceRetrieveImagingDocumentSet: " + t.getElapsedTime());
+        	logger.debug("imagingDocumentSourceRetrieveImagingDocumentSet: " + t.getElapsedTime());
 
         } catch (Exception e) {
              logger.error("Error for imagingDocumentSourceRetrieveImagingDocumentSet : ",e);

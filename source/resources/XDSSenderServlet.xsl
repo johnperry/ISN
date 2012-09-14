@@ -17,7 +17,7 @@
 			<title>Send Studies</title>
 		</head>
 		<body>
-			<h1>Send Studies to the Clearinghouse</h1>
+			<h1>Send Studies to the RSNA Image Share</h1>
 
 			<form id="formID" action="" method="POST" accept-charset="UTF-8" >
 
@@ -29,7 +29,8 @@
 							<xsl:for-each select="$destinations/Destinations/Destination">
 								<option value="{@key}"><xsl:value-of select="@name"/></option>
 							</xsl:for-each>
-							<option value="0">Trash</option>
+							<option disabled="true">------</option>
+							<option value="0">Remove from List</option>
 						</select>
 					</p>
 					<p>
@@ -120,7 +121,7 @@
 	<xsl:variable name="modality" select="normalize-space(@modality)"/>
 	<xsl:variable name="bodypart" select="normalize-space(@bodypart)"/>
 	<td class="center">
-		<xsl:if test="$modality)">
+		<xsl:if test="$modality">
 			<xsl:value-of select="$modality"/>
 			<xsl:if test="$bodypart">
 				<xsl:text> - </xsl:text>

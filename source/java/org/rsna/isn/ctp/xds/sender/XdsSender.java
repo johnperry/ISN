@@ -79,7 +79,7 @@ public class XdsSender
 		this.iti41SrcId = element.getAttribute("iti41SrcId");
 		this.timeout = NumberUtils.toLong(element.getAttribute("timeout"), 1000);
 
-		logger.info("XdsSender instantiated");
+		logger.debug("XdsSender instantiated");
 	}
 
 	/**
@@ -105,7 +105,7 @@ public class XdsSender
 	 */
 	public Status submit(List<File> files, String hash)
 	{
-		logger.info("submit request for "+files.size()+" files. Key = "+hash);
+		logger.debug("submit request for "+files.size()+" files. Key = "+hash);
 
 		Collection<DicomStudy> studies;
 
@@ -114,7 +114,7 @@ public class XdsSender
 		{
 			studies = KosGenerator.processFiles(files, listenerList);
 
-			logger.info("KosGenerator completed processing the files");
+			logger.debug("KosGenerator completed processing the files");
 		}
 		catch (Throwable ex)
 		{
@@ -147,7 +147,7 @@ public class XdsSender
 				currentIndex += Iti41.submitDocuments(study, hash, iti41, iti41SrcId,
 						timeout, listenerList, currentIndex, total);
 
-				logger.info("finished submitting the documents");
+				logger.debug("finished submitting the documents");
 			}
 			catch (Throwable ex)
 			{

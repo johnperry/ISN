@@ -313,7 +313,7 @@ public class XDSStudyCache {
 					Status status = sender.submit(
 										study.getFiles(),
 										study.getDestination());
-					logger.info("XdsSender.submit returned "+status.toString()+" at "+timer.getTimeString());
+					logger.debug("XdsSender.submit returned "+status.toString()+" at "+timer.getTimeString());
 					if (status.equals(Status.OK)) {
 						study.setStatus( XDSStudyStatus.SUCCESS );
 					}
@@ -337,7 +337,7 @@ public class XDSStudyCache {
 				File f = e.getFile();
 				String fn = (f != null) ? f.getName() : "null";
 				String t = timer.getTimeString();
-				logger.info("Iti41Event (currentImage:"+ci+"/"+ni+") received at "+t+" ["+fn+"]");
+				logger.debug("Iti41Event (currentImage:"+ci+"/"+ni+") received at "+t+" ["+fn+"]");
 				study.setObjectsSent(ci);
 				database.put(study);
 			}

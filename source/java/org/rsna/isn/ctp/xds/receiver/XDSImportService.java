@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------
-*  Copyright 2011 by the Radiological Society of North America
+*  Copyright 2012 by the Radiological Society of North America
 *
 *  This source software is released under the terms of the
 *  RSNA Public License (http://mirc.rsna.org/rsnapubliclicense)
@@ -8,6 +8,8 @@
 package org.rsna.isn.ctp.xds.receiver;
 
 import java.io.File;
+import java.net.URL;
+import java.util.List;
 import org.apache.log4j.Logger;
 import org.rsna.ctp.Configuration;
 import org.rsna.ctp.objects.FileObject;
@@ -22,34 +24,28 @@ import org.rsna.util.StringUtil;
 import org.w3c.dom.Element;
 
 /**
- * An ImportService that polls an XSDFileSource to obtain files.
+ * An ImportService that is driven by a servlet to obtain studies from the clearinghouse.
  */
-public class PollingXDSImportService extends AbstractPipelineStage implements ImportService {
+public class XDSImportService extends AbstractPipelineStage implements ImportService {
 
-	static final Logger logger = Logger.getLogger(PollingXDSImportService.class);
+	static final Logger logger = Logger.getLogger(XDSImportService.class);
 
 	File active = null;
 	String activePath = "";
-	File temp = null;
 	QueueManager queueManager = null;
 	int count = 0;
 
-	long lastPollTime = 0L;
-	int interval = 60;
-
-	String siteID;
-	XDSFileSource fileSource = null;
-
-	Poller poller = null;
+	DocSetDB docSetDB = null;
+	File temp = null;
 
 	String servletContext = "";
 
 	/**
-	 * Construct a PollingXDSImportService.
+	 * Construct an XDSImportService.
 	 * @param element the XML element from the configuration file,
 	 * specifying the configuration of the stage.
 	 */
-	public PollingXDSImportService(Element element) throws Exception {
+	public XDSImportService(Element element) throws Exception {
 		super(element);
 		if (root == null) logger.error(name+": No root directory was specified.");
 
@@ -62,10 +58,6 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 		activePath = active.getAbsolutePath();
 		queueManager.enqueueDir(active); //requeue any files that are left from an ungraceful shutdown.
 
-		//Get the minimum polling interval (in seconds)
-		interval = Math.max(  StringUtil.getInt(element.getAttribute("interval"), interval), interval );
-		interval *= 1000;
-
 		//Get the servlet context. This is only used for the clinical receiver, not the research receiver
 		servletContext = element.getAttribute("servletContext").trim();
 
@@ -74,6 +66,15 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 		//so in configurations with multiple stages that call this method, the multiple
 		//calls don't cause a problem.
 		SOAPSetup.init();
+
+		//Set up a dummy DocSetDB so RetrieveDocuments will always accept
+		//studies triggered by the XDSSenderServlet
+		File dbdir = new File(root, "database");
+		docSetDB = new DocSetDB(dbdir, true); //true makes it always return false, indicating that the study has not been seen.
+
+		//Make a temp directory for use by RetrieveDocuments
+		temp = new File(root, "temp");
+		temp.mkdirs();
 	}
 
 	/**
@@ -89,17 +90,18 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 		XDSConfiguration.load(element);
 
 		try {
-			//Instantiate the XDSFileSource
-			fileSource = new XDSFileSource(element, temp, null);
+			if (!servletContext.equals("")) {
+				//Install the servlet
+				HttpServer server = config.getServer();
+				ServletSelector selector = server.getServletSelector();
+				selector.addServlet("isn-tool", XDSToolServlet.class);
+				selector.addServlet(servletContext, XDSReceiverServlet.class);
 
-			//Instantiate the Poller and start it.
-			poller = new Poller();
-			poller.start();
-
-			//Install the helper servlet
-			HttpServer server = config.getServer();
-			ServletSelector selector = server.getServletSelector();
-			selector.addServlet("isn-tool", XDSToolServlet.class);
+				//Register the stage using the servletContext
+				//Note: this must be done here; not in the constructor.
+				config.registerStage(this, servletContext);
+			}
+			else logger.warn(name+": No servlet context was supplied");
 
 			//Install the ISN roles and ensure that the admin user has them.
 			ISNRoles.init();
@@ -110,18 +112,25 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 	}
 
 	/**
+	 * Get the list of submission sets for a key
+	 * @param key the hash key identifying the submission sets
+	 */
+	public List<DocumentInfo> getSubmissionSets(String key) throws Exception {
+		RetrieveDocuments rd = new RetrieveDocuments(temp, docSetDB, key);
+		return rd.getSubmissionSets();
+	}
+
+	/**
 	 * Stop the pipeline stage.
 	 */
 	public void shutdown() {
 		stop = true;
-		if (poller != null) poller.interrupt();
 	}
 
 	/**
 	 * Determine whether the pipeline stage has shut down.
 	 */
 	public boolean isDown() {
-		if (poller != null) return !poller.isAlive();
 		return stop;
 	}
 
@@ -170,34 +179,8 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 		String stageUniqueStatus =
 			"<tr><td width=\"20%\">Files received:</td><td>" + count + "</td></tr>"
 			+ "<tr><td width=\"20%\">Queue size:</td>"
-			+ "<td>" + ((queueManager!=null) ? queueManager.size() : "???") + "</td></tr>"
-			+ "<tr><td width=\"20%\">Last poll time:</td>"
-			+ "<td>" + StringUtil.getTime(lastPollTime,":") + "</td></tr>";
+			+ "<td>" + ((queueManager!=null) ? queueManager.size() : "???") + "</td></tr>";
 		return super.getStatusHTML(stageUniqueStatus);
-	}
-
-	//The class to poll the XDSFileSource and enqueue files.
-	class Poller extends Thread {
-		public Poller() { }
-
-		public void run() {
-			File file;
-			while (!stop) {
-				lastPollTime = System.currentTimeMillis();
-				if ( (file=fileSource.getFile()) != null ) {
-					queueManager.enqueue(file);
-					file.delete();
-					count++;
-					lastFileIn = file;
-					lastTimeIn = System.currentTimeMillis();
-				}
-				else {
-					try { Thread.sleep(interval); }
-					catch (Exception ex) { }
-				}
-			}
-			fileSource.shutdown();
-		}
 	}
 
 }

@@ -8,7 +8,7 @@
 <xsl:param name="key"/>
 <xsl:param name="tokens"/>
 
-<xsl:template match="/">
+<xsl:template match="/Studies">
 	<html>
 		<head>
 			<link rel="Stylesheet" type="text/css" media="all" href="/XDSServlet.css"></link>
@@ -16,66 +16,84 @@
 		</head>
 		<body>
 
-			<xsl:if test="$tokens">
-				<div style="float:right; width:80; padding 10; border:thin solid black;">
-					<p style="font-weight:bold; padding-top:5">Random<br/><u>Tokens</u></p>
-					<p style="font-family:monospace;"><xsl:value-of select="$tokens"/></p>
-				</div>
-			</xsl:if>
-
-			<h1>Retrieve Studies from the Clearinghouse</h1>
+			<h1>Retrieve Studies from the RSNA Image Share</h1>
 
 			<form id="formID" action="" method="POST" accept-charset="UTF-8" >
 
 				<p>
-					<table border="1">
+					<table border="0">
 						<tr>
-							<td>Token:</td>
-							<td><input name="usertoken" type="text"/></td>
-						</tr>
-						<tr>
-							<td>Date of Birth (YYYYMMDD):</td>
-							<td><input name="dateofbirth" type="text"/></td>
-						</tr>
-						<tr>
-							<td>Password:</td>
-							<td><input name="password" type="text"/></td>
+							<td>
+								<table border="1">
+									<tr>
+										<td>Exam ID:</td>
+										<td><input name="usertoken" type="text"/></td>
+									</tr>
+									<tr>
+										<td>PIN/Password:</td>
+										<td><input name="password" type="text"/></td>
+									</tr>
+									<tr>
+										<td title="Date of Birth">DOB (YYYYMMDD):</td>
+										<td><input name="dateofbirth" type="text"/></td>
+									</tr>
+								</table>
+							</td>
+							<td>
+								<input type="submit" class="button" value="Get Exam List"/>
+							</td>
 						</tr>
 					</table>
 				</p>
-				<p>
-					<input type="submit" class="button" value="Query"/>
-				</p>
 
-				<xsl:if test="$token">
-					<br/>
-					<br/>
-					<p style="font-weight:bold">Results</p>
+				<xsl:if test="Study">
+					<hr/>
 					<p>
-						<table border="1">
+						<table border="0">
 							<tr>
-								<td>Token:</td>
-								<td><xsl:value-of select="$token"/></td>
-							</tr>
-							<tr>
-								<td>Date of Birth (YYYYMMDD):</td>
-								<td><xsl:value-of select="$dob"/></td>
-							</tr>
-							<tr>
-								<td>Password:</td>
-								<td><xsl:value-of select="$pw"/></td>
-							</tr>
-							<tr>
-								<td>Key:</td>
-								<td><xsl:value-of select="$key"/></td>
+								<td>
+									<table border="1">
+										<xsl:call-template name="StudyHeadings"/>
+										<xsl:for-each select="Study">
+											<xsl:sort select="@studyDate"/>
+											<tr>
+												<td class="center"><input type="checkbox" name="study" value="{@studyUID}"/></td>
+												<td><xsl:value-of select="@patientName"/></td>
+												<td title="UID: {@studyUID}"><xsl:value-of select="@studyDate"/></td>
+												<td>
+													<xsl:variable name="sd" select="normalize-space(@studyDescription)"/>
+													<xsl:if test="$sd"><xsl:value-of select="$sd"/></xsl:if>
+													<xsl:if test="not($sd)">&#160;</xsl:if>
+												</td>
+											</tr>
+										</xsl:for-each>
+									</table>
+								</td>
+								<td>
+									<input type="submit" class="button" value="Get Exams"/>
+								</td>
 							</tr>
 						</table>
 					</p>
 				</xsl:if>
 
+				<xsl:if test="$token and not(Study)">
+					<hr/>
+					<h2>No Submission Sets Found</h2>
+				</xsl:if>
+
 			</form>
 		</body>
 	</html>
+</xsl:template>
+
+<xsl:template name="StudyHeadings">
+	<tr>
+		<th>Select</th>
+		<th>Patient Name</th>
+		<th>Study Date</th>
+		<th>Study Description</th>
+	</tr>
 </xsl:template>
 
 </xsl:stylesheet>

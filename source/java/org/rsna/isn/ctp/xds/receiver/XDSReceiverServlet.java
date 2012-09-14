@@ -8,8 +8,10 @@
 package org.rsna.isn.ctp.xds.receiver;
 
 import java.io.File;
+import java.util.List;
 import org.apache.log4j.Logger;
-import org.rsna.ctp.objects.ZipObject;
+import org.rsna.ctp.Configuration;
+import org.rsna.ctp.pipeline.PipelineStage;
 import org.rsna.server.HttpRequest;
 import org.rsna.server.HttpResponse;
 import org.rsna.server.Path;
@@ -58,7 +60,7 @@ public class XDSReceiverServlet extends Servlet {
 
 			if (length == 1) {
 				//This is a request for the main page
-				res.write( getPage("", "", "", "") );
+				res.write( getPage("", "", "", "", null) );
 				res.setContentType("html");
 				res.disableCaching();
 				res.send();
@@ -81,33 +83,26 @@ public class XDSReceiverServlet extends Servlet {
 		String usertoken = req.getParameter("usertoken", "usertoken").trim();
 		String dateofbirth = req.getParameter("dateofbirth", "19460201").trim();
 		String password = req.getParameter("password", "password").trim();
-
 		String key = TransHash.gen(usertoken, dateofbirth, password);
 
-		res.write( getPage(usertoken, dateofbirth, password, key) );
+		Configuration config = Configuration.getInstance();
+		XDSImportService xdsImportService = (XDSImportService)config.getRegisteredStage(context);
+        List<DocumentInfo> docInfoList = xdsImportService.getSubmissionSets(key);
+
+		res.write( getPage(usertoken, dateofbirth, password, key, docInfoList) );
 		res.setContentType("html");
 		res.send();
 	}
 
-	private String getPage(String token, String dob, String pw, String key) {
+	private String getPage(String token, String dob, String pw, String key, List<DocumentInfo> docInfoList) {
 		try {
-			//Make some random tokens
-			StringBuffer tokens = new StringBuffer();
-			for (int i=0; i<25; i++) {
-				tokens.append(
-					org.apache.commons.lang.RandomStringUtils.random(6, "ybndrfg8ejkmcpqxotluwisza34h769")
-					+ " ");
-			}
-
-			//Make the page
-			Document doc = getSubmissionSetsDocument();
+			Document doc = getStudiesDocument(docInfoList);
 			String xslPath = "/XDSReceiverServlet.xsl";
-			String[] params = {
+			Object[] params = {
 				"token", token,
 				"dob", dob,
 				"pw", pw,
 				"key", key,
-				"tokens", tokens.toString()
 			};
 			Document xsl = XmlUtil.getDocument( FileUtil.getStream( xslPath ) );
 			return XmlUtil.getTransformedText( doc, xsl, params );
@@ -115,16 +110,44 @@ public class XDSReceiverServlet extends Servlet {
 		catch (Exception ex) { return "Unable to create the receiver page."; }
 	}
 
-	private Document getSubmissionSetsDocument() {
+	private Document getStudiesDocument(List<DocumentInfo> docInfoList) {
 		try {
 			Document doc = XmlUtil.getDocument();
-			Element root = doc.createElement("SubmissionSets");
+			Element root = doc.createElement("Studies");
 			doc.appendChild(root);
+			if (docInfoList != null) {
+				for (DocumentInfo info : docInfoList) {
+					Element study = doc.createElement("Study");
+					root.appendChild(study);
+					study.setAttribute("patientName", fixString(info.getPatientName()));
+					study.setAttribute("studyDate", fixDate(fixString(info.getStudyDate())));
+					study.setAttribute("studyUID", info.getStudyInstanceUID());
+
+					//Try to find something for the studyDescription
+					String sd = fixString(info.getStudyDescription());
+					if (sd.equals("")) sd = fixString(info.getModality());
+					study.setAttribute("studyDescription", sd);
+				}
+			}
 			return doc;
 		}
 		catch (Exception ex) {
+			logger.warn("Unable to create the Studies Document", ex);
 			return null;
 		}
+	}
+
+	private String fixString(String s) {
+		return (s == null) ? "" : s.trim();
+	}
+
+	private String fixDate(String date) {
+		if (date.length() == 8) {
+			return date.substring(0,4) + "."
+					+ date.substring(4,6) + "."
+						+ date.substring(6);
+		}
+		return "";
 	}
 
 }

@@ -83,7 +83,7 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		}
 
 		//Initialize the SOAP configuration.
-		//Note: This static method only initializes if it hasn't already been done,
+		//Note: The static init method only initializes if it hasn't already been done,
 		//so in configurations with multiple stages that call this method, the multiple
 		//calls don't cause a problem.
 		SOAPSetup.init();

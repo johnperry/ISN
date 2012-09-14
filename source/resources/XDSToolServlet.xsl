@@ -31,16 +31,16 @@
 				<p>
 					<table border="1">
 						<tr>
-							<td>Token:</td>
+							<td>Exam ID:</td>
 							<td><input name="usertoken" type="text"/></td>
 						</tr>
 						<tr>
-							<td>Date of Birth:</td>
-							<td><input name="dateofbirth" type="text" value="{$today}"/></td>
+							<td>PIN/Password:</td>
+							<td><input name="password" type="text"/></td>
 						</tr>
 						<tr>
-							<td>Password:</td>
-							<td><input name="password" type="text"/></td>
+							<td title="Date of Birth">DOB (YYYYMMDD):</td>
+							<td><input name="dateofbirth" type="text" value="{$today}"/></td>
 						</tr>
 					</table>
 				</p>
@@ -55,16 +55,16 @@
 					<p>
 						<table border="1">
 							<tr>
-								<td>Token:</td>
+								<td>Exam ID:</td>
 								<td><xsl:value-of select="$token"/></td>
+							</tr>
+							<tr>
+								<td>PIN/Password:</td>
+								<td><xsl:value-of select="$pw"/></td>
 							</tr>
 							<tr>
 								<td>Date of Birth:</td>
 								<td><xsl:value-of select="$dob"/></td>
-							</tr>
-							<tr>
-								<td>Password:</td>
-								<td><xsl:value-of select="$pw"/></td>
 							</tr>
 							<tr>
 								<td>Key:</td>
