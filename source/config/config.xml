@@ -1,5 +1,5 @@
 <Configuration log="yes">
-    <Server port="9080"
+    <Server port="1080"
     	ssl="no"
         keystore="keystore.jks"
         keystorePassword="edge1234"

@@ -142,12 +142,8 @@ public class XDSStudyCache {
 			//There is no study for this object, create a new study.
 			study = new XDSStudy(fo, studyDir);
 		}
-		else {
-			//The study exists. Update the modality if it isn't already there
-			if (study.getModality().equals("") && (fo instanceof DicomObject)) {
-				study.setModality( ((DicomObject)fo).getModality() );
-			}
-		}
+		else study.update(fo); //update the study description, etc., if they have not already been stored
+
 		study.setSize(studyDir.listFiles().length); //count the object added to the study
 		study.setLastModifiedTime(); //record the time of this object storage
 		study.setStatus(XDSStudyStatus.OPEN);

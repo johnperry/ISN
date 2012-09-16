@@ -126,6 +126,7 @@ public class XDSReceiverServlet extends Servlet {
 					//Try to find something for the studyDescription
 					String sd = fixString(info.getStudyDescription());
 					if (sd.equals("")) sd = fixString(info.getModality());
+					if (sd.equals("KO")) sd = "unavailable";
 					study.setAttribute("studyDescription", sd);
 				}
 			}

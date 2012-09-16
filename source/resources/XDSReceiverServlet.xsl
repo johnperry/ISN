@@ -27,15 +27,15 @@
 								<table border="1">
 									<tr>
 										<td>Exam ID:</td>
-										<td><input name="usertoken" type="text"/></td>
+										<td><input name="usertoken" type="text" value="$token"/></td>
 									</tr>
 									<tr>
 										<td>PIN/Password:</td>
-										<td><input name="password" type="text"/></td>
+										<td><input name="password" type="text" value="$pw"/></td>
 									</tr>
 									<tr>
 										<td title="Date of Birth">DOB (YYYYMMDD):</td>
-										<td><input name="dateofbirth" type="text"/></td>
+										<td><input name="dateofbirth" type="text" value="$dob"/></td>
 									</tr>
 								</table>
 							</td>

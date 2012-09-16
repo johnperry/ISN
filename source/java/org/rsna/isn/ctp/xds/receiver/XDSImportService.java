@@ -9,6 +9,7 @@ package org.rsna.isn.ctp.xds.receiver;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Hashtable;
 import java.util.List;
 import org.apache.log4j.Logger;
 import org.rsna.ctp.Configuration;
@@ -20,8 +21,11 @@ import org.rsna.isn.ctp.ISNRoles;
 import org.rsna.isn.ctp.xds.sender.ihe.SOAPSetup;
 import org.rsna.server.HttpServer;
 import org.rsna.server.ServletSelector;
+import org.rsna.util.FileUtil;
 import org.rsna.util.StringUtil;
 import org.w3c.dom.Element;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
 /**
  * An ImportService that is driven by a servlet to obtain studies from the clearinghouse.
@@ -40,6 +44,10 @@ public class XDSImportService extends AbstractPipelineStage implements ImportSer
 
 	String servletContext = "";
 
+	Hashtable<Integer, DocInfoResult> docInfoTable;
+	ExecutorService execSvc;
+	int maxThreads = 2;
+
 	/**
 	 * Construct an XDSImportService.
 	 * @param element the XML element from the configuration file,
@@ -49,8 +57,6 @@ public class XDSImportService extends AbstractPipelineStage implements ImportSer
 		super(element);
 		if (root == null) logger.error(name+": No root directory was specified.");
 
-		temp = new File(root, "xds");
-		temp.mkdirs();
 		File queue = new File(root, "queue");
 		queueManager = new QueueManager(queue, 0, 0); //use default settings
 		active = new File(root, "active");
@@ -73,8 +79,14 @@ public class XDSImportService extends AbstractPipelineStage implements ImportSer
 		docSetDB = new DocSetDB(dbdir, true); //true makes it always return false, indicating that the study has not been seen.
 
 		//Make a temp directory for use by RetrieveDocuments
-		temp = new File(root, "temp");
+		temp = new File(root, "xds");
 		temp.mkdirs();
+
+		//Make a table to temporarily hold document info.
+		docInfoTable = new Hashtable<Integer, DocInfoResult>();
+
+		//Get an executor for downloading studies
+		execSvc = Executors.newFixedThreadPool( maxThreads );
 	}
 
 	/**
@@ -116,8 +128,82 @@ public class XDSImportService extends AbstractPipelineStage implements ImportSer
 	 * @param key the hash key identifying the submission sets
 	 */
 	public List<DocumentInfo> getSubmissionSets(String key) throws Exception {
-		RetrieveDocuments rd = new RetrieveDocuments(temp, docSetDB, key);
-		return rd.getSubmissionSets();
+		File tempDir = FileUtil.createTempDirectory(temp);
+		RetrieveDocuments rd = new RetrieveDocuments(tempDir, docSetDB, key);
+		List<DocumentInfo> results = rd.getSubmissionSets();
+		for (DocumentInfo di : results) {
+			Integer hashInt = new Integer(di.hashCode());
+			docInfoTable.put(hashInt, new DocInfoResult(di));
+		}
+		FileUtil.deleteAll(tempDir);
+		return results;
+	}
+
+	/**
+	 * Get a list of studies
+	 * @param studies the list of DocInfoResult hashes that identify DocInfoResults
+	 * of studies to be retrieved from the clearinghouse.
+	 */
+	public void getStudies(String key, List<String> studies) {
+		StudyDownloader sd = new StudyDownloader(key, studies);
+		execSvc.execute( sd );
+	}
+
+	class DocInfoResult {
+		long time;
+		DocumentInfo info;
+		public DocInfoResult(DocumentInfo info) {
+			this.info = info;
+			this.time = System.currentTimeMillis();
+		}
+		public boolean isRecent() {
+			return ((System.currentTimeMillis() - time) < 36000000L); //10 hours
+		}
+		public DocumentInfo getInfo() {
+			return info;
+		}
+	}
+
+	private void removeOldResults() {
+		Integer[] ints = new Integer[docInfoTable.size()];
+		ints = docInfoTable.keySet().toArray(ints);
+		for (Integer i : ints) {
+			DocInfoResult info = docInfoTable.get(i);
+			if (!info.isRecent()) docInfoTable.remove(i);
+		}
+	}
+
+	class StudyDownloader extends Thread {
+		String key;
+		List<String> studies;
+		public StudyDownloader(String key, List<String> studies) {
+			this.key = key;
+			this.studies = studies;
+		}
+		public void run() {
+			File tempDir = FileUtil.createTempDirectory(temp);
+			try {
+				RetrieveDocuments rd = new RetrieveDocuments(tempDir, docSetDB, key);
+				for (String s : studies) {
+					try {
+						DocInfoResult result = docInfoTable.get( new Integer(s) );
+						if (result != null) {
+							DocumentInfo info = result.getInfo();
+							rd.getStudy(info);
+							queueManager.enqueueDir(tempDir);
+						}
+					}
+					catch (Exception doesNotParse) {
+						logger.debug("Cannot parse study integer: "+s);
+					}
+				}
+			}
+			catch (Exception skip) {
+				logger.warn("Unable to instantiate RetrieveDocuments for key: "+key);
+			}
+			FileUtil.deleteAll(tempDir);
+			removeOldResults();
+		}
 	}
 
 	/**

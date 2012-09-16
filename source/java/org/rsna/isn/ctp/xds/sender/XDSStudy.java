@@ -32,13 +32,14 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 	int objectsSent;
 	long lastModifiedTime;
 	XDSStudyStatus status;
-	String destination;
-	String destinationName;
+	String destination = "";
+	String destinationName = "";
 	String patientID;
 	String patientName;
 	String studyDate;
-	String modality;
-	String bodypart;
+	String modality = "";
+	String bodypart = "";
+	String studyDescription = "";
 
 	/**
 	 * Construct an XDSStudy.
@@ -56,17 +57,16 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 		this.patientID = fo.getPatientID();
 		this.patientName = fo.getPatientName();
 		setStudyDate(fo.getStudyDate());
+		update(fo);
+	}
+
+	public synchronized void update(FileObject fo) {
 		if (fo instanceof DicomObject) {
 			DicomObject dob = (DicomObject)fo;
-			this.modality = dob.getModality();
-			this.bodypart = dob.getBodyPartExamined();
+			if (modality.equals("")) modality = dob.getModality();
+			if (bodypart.equals("")) bodypart = dob.getBodyPartExamined();
+			if (studyDescription.equals("")) studyDescription = dob.getStudyDescription();
 		}
-		else {
-			this.modality = "";
-			this.bodypart = "";
-		}
-		this.destination = "";
-		this.destinationName = "";
 	}
 
 	/**
@@ -194,6 +194,16 @@ public class XDSStudy implements Serializable, Comparable<XDSStudy> {
 			root.setAttribute("studyDate", studyDate);
 			root.setAttribute("modality", modality);
 			root.setAttribute("bodypart", bodypart);
+			root.setAttribute("studyDescription", studyDescription);
+
+			String sd = studyDescription;
+			if (sd.equals("")) {
+				sd = modality;
+				if (!sd.equals("") && !bodypart.equals("")) sd += ": "+bodypart;
+				if (sd.equals("")) sd = "unavailable";
+			}
+			root.setAttribute("description", sd);
+
 			root.setAttribute("destination", destination);
 			root.setAttribute("destinationName", destinationName);
 			return doc;
