@@ -64,7 +64,7 @@ public class XDSImportService extends AbstractPipelineStage implements ImportSer
 		activePath = active.getAbsolutePath();
 		queueManager.enqueueDir(active); //requeue any files that are left from an ungraceful shutdown.
 
-		//Get the servlet context. This is only used for the clinical receiver, not the research receiver
+		//Get the servlet context.
 		servletContext = element.getAttribute("servletContext").trim();
 
 		//Initialize the SOAP configuration.
@@ -133,7 +133,7 @@ public class XDSImportService extends AbstractPipelineStage implements ImportSer
 		List<DocumentInfo> results = rd.getSubmissionSets();
 		for (DocumentInfo di : results) {
 			Integer hashInt = new Integer(di.hashCode());
-			docInfoTable.put(hashInt, new DocInfoResult(di));
+			docInfoTable.put(hashInt, new DocInfoResult(di, key));
 		}
 		FileUtil.deleteAll(tempDir);
 		return results;
@@ -145,15 +145,17 @@ public class XDSImportService extends AbstractPipelineStage implements ImportSer
 	 * of studies to be retrieved from the clearinghouse.
 	 */
 	public void getStudies(String key, List<String> studies) {
-		StudyDownloader sd = new StudyDownloader(key, studies);
+		StudyDownloader sd = new StudyDownloader(studies);
 		execSvc.execute( sd );
 	}
 
 	class DocInfoResult {
 		long time;
+		String key;
 		DocumentInfo info;
-		public DocInfoResult(DocumentInfo info) {
+		public DocInfoResult(DocumentInfo info, String key) {
 			this.info = info;
+			this.key = key;
 			this.time = System.currentTimeMillis();
 		}
 		public boolean isRecent() {
@@ -161,6 +163,9 @@ public class XDSImportService extends AbstractPipelineStage implements ImportSer
 		}
 		public DocumentInfo getInfo() {
 			return info;
+		}
+		public String getKey() {
+			return key;
 		}
 	}
 
@@ -174,32 +179,24 @@ public class XDSImportService extends AbstractPipelineStage implements ImportSer
 	}
 
 	class StudyDownloader extends Thread {
-		String key;
 		List<String> studies;
-		public StudyDownloader(String key, List<String> studies) {
-			this.key = key;
+		public StudyDownloader(List<String> studies) {
 			this.studies = studies;
 		}
 		public void run() {
 			File tempDir = FileUtil.createTempDirectory(temp);
-			try {
-				RetrieveDocuments rd = new RetrieveDocuments(tempDir, docSetDB, key);
-				for (String s : studies) {
-					try {
-						DocInfoResult result = docInfoTable.get( new Integer(s) );
-						if (result != null) {
-							DocumentInfo info = result.getInfo();
-							rd.getStudy(info);
-							queueManager.enqueueDir(tempDir);
-						}
-					}
-					catch (Exception doesNotParse) {
-						logger.debug("Cannot parse study integer: "+s);
+			for (String s : studies) {
+				try {
+					DocInfoResult result = docInfoTable.get( new Integer(s) );
+					RetrieveDocuments rd = new RetrieveDocuments(tempDir, docSetDB, result.getKey());
+					if (result != null) {
+						DocumentInfo info = result.getInfo();
+						rd.getStudy(info,queueManager);
 					}
 				}
-			}
-			catch (Exception skip) {
-				logger.warn("Unable to instantiate RetrieveDocuments for key: "+key);
+				catch (Exception unable) {
+					logger.debug("Unable to download study: "+s, unable);
+				}
 			}
 			FileUtil.deleteAll(tempDir);
 			removeOldResults();

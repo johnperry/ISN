@@ -94,7 +94,7 @@
 		<th>Patient ID</th>
 		<th>Patient Name</th>
 		<th>Study Date</th>
-		<th>Modality</th>
+		<th>Study</th>
 		<th>Study Size</th>
 		<th>Status</th>
 	</tr>
@@ -105,7 +105,7 @@
 		<th>Patient ID</th>
 		<th>Patient Name</th>
 		<th>Study Date</th>
-		<th>Modality</th>
+		<th>Study</th>
 		<th>Study Size</th>
 		<th>Files Sent</th>
 		<th>Destination</th>
@@ -115,7 +115,7 @@
 
 <xsl:template name="Description">
 	<td class="center">
-		<xsl:variable name="dsc" select="normalize-space(@desc)"/>
+		<xsl:variable name="dsc" select="normalize-space(@description)"/>
 		<xsl:if test="$dsc"><xsl:value-of select="$dsc"/></xsl:if>
 		<xsl:if test="not($dsc)">&#160;</xsl:if>
 	</td>

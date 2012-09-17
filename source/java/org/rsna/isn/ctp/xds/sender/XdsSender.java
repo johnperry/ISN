@@ -142,7 +142,7 @@ public class XdsSender
 		{
 			try
 			{
-				logger.info("submitting the documents");
+				logger.debug("submitting the documents");
 
 				currentIndex += Iti41.submitDocuments(study, hash, iti41, iti41SrcId,
 						timeout, listenerList, currentIndex, total);

@@ -60,7 +60,7 @@ public class XDSReceiverServlet extends Servlet {
 
 			if (length == 1) {
 				//This is a request for the main page
-				res.write( getPage("", "", "", "", null) );
+				res.write( getPage("", "", "", "", "", null) );
 				res.setContentType("html");
 				res.disableCaching();
 				res.send();
@@ -87,14 +87,34 @@ public class XDSReceiverServlet extends Servlet {
 
 		Configuration config = Configuration.getInstance();
 		XDSImportService xdsImportService = (XDSImportService)config.getRegisteredStage(context);
-        List<DocumentInfo> docInfoList = xdsImportService.getSubmissionSets(key);
 
-		res.write( getPage(usertoken, dateofbirth, password, key, docInfoList) );
+		List<String> studies = req.getParameterValues("study");
+
+		if (studies == null) logger.debug("studies == null");
+		else logger.debug("studies.size() == "+studies.size());
+
+		if ((studies == null) || (studies.size() == 0)) {
+			if (!usertoken.equals("")) {
+				//This is a request for the list of studies
+				List<DocumentInfo> docInfoList = xdsImportService.getSubmissionSets(key);
+				res.write( getPage(usertoken, dateofbirth, password, key, "", docInfoList) );
+			}
+			else {
+				//No token and no studies, just return the base page
+				res.write( getPage("", "", "", "", "", null) );
+			}
+		}
+		else {
+			//This is a request to download the selected studies;
+			xdsImportService.getStudies(key, studies);
+			res.write( getPage(usertoken, dateofbirth, password, key,
+						"The download request has been queued.", null) );
+		}
 		res.setContentType("html");
 		res.send();
 	}
 
-	private String getPage(String token, String dob, String pw, String key, List<DocumentInfo> docInfoList) {
+	private String getPage(String token, String dob, String pw, String key, String message, List<DocumentInfo> docInfoList) {
 		try {
 			Document doc = getStudiesDocument(docInfoList);
 			String xslPath = "/XDSReceiverServlet.xsl";
@@ -103,6 +123,7 @@ public class XDSReceiverServlet extends Servlet {
 				"dob", dob,
 				"pw", pw,
 				"key", key,
+				"message", message
 			};
 			Document xsl = XmlUtil.getDocument( FileUtil.getStream( xslPath ) );
 			return XmlUtil.getTransformedText( doc, xsl, params );
@@ -119,6 +140,7 @@ public class XDSReceiverServlet extends Servlet {
 				for (DocumentInfo info : docInfoList) {
 					Element study = doc.createElement("Study");
 					root.appendChild(study);
+					study.setAttribute("hash", Integer.toString(info.hashCode()));
 					study.setAttribute("patientName", fixString(info.getPatientName()));
 					study.setAttribute("studyDate", fixDate(fixString(info.getStudyDate())));
 					study.setAttribute("studyUID", info.getStudyInstanceUID());

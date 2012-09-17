@@ -85,10 +85,10 @@ public class ITI18 {
             patientId.setAssigningAuthorityUniversalIdType(AssigningAuthorityUniversalIdType);
             patientId.setIdNumber(patientID);
 
-            CodedMetadataType[] hcfc1 = {MetadataFactory.eINSTANCE.createCodedMetadataType()};
+            CodedMetadataType[] hcfc1 = { MetadataFactory.eINSTANCE.createCodedMetadataType() };
             hcfc1[0].setCode(codedMetadataType);
 
-            AvailabilityStatusType[] status = new AvailabilityStatusType[]{AvailabilityStatusType.APPROVED_LITERAL} ;
+            AvailabilityStatusType[] status = new AvailabilityStatusType[] { AvailabilityStatusType.APPROVED_LITERAL };
 
             //Get SubmissionSets
             docList = new HashMap<String, ArrayList<String>>();

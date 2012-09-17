@@ -2,17 +2,18 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="yes" />
 
-<xsl:param name="token"/>
-<xsl:param name="dob"/>
-<xsl:param name="pw"/>
-<xsl:param name="key"/>
-<xsl:param name="tokens"/>
+<xsl:param name="message"/>
 
 <xsl:template match="/Studies">
 	<html>
 		<head>
 			<link rel="Stylesheet" type="text/css" media="all" href="/XDSServlet.css"></link>
 			<title>Retrieve Studies</title>
+			<script>
+				var message = "<xsl:value-of select="$message"/>";
+				function loaded() { if (message != "") alert(message); }
+				window.onload = loaded;
+			</script>
 		</head>
 		<body>
 
@@ -27,15 +28,15 @@
 								<table border="1">
 									<tr>
 										<td>Exam ID:</td>
-										<td><input name="usertoken" type="text" value="$token"/></td>
+										<td><input name="usertoken" type="text" value=""/></td>
 									</tr>
 									<tr>
 										<td>PIN/Password:</td>
-										<td><input name="password" type="text" value="$pw"/></td>
+										<td><input name="password" type="text" value=""/></td>
 									</tr>
 									<tr>
 										<td title="Date of Birth">DOB (YYYYMMDD):</td>
-										<td><input name="dateofbirth" type="text" value="$dob"/></td>
+										<td><input name="dateofbirth" type="text" value=""/></td>
 									</tr>
 								</table>
 							</td>
@@ -57,7 +58,7 @@
 										<xsl:for-each select="Study">
 											<xsl:sort select="@studyDate"/>
 											<tr>
-												<td class="center"><input type="checkbox" name="study" value="{@studyUID}"/></td>
+												<td class="center"><input type="checkbox" name="study" value="{@hash}"/></td>
 												<td><xsl:value-of select="@patientName"/></td>
 												<td title="UID: {@studyUID}"><xsl:value-of select="@studyDate"/></td>
 												<td>
@@ -75,11 +76,6 @@
 							</tr>
 						</table>
 					</p>
-				</xsl:if>
-
-				<xsl:if test="$token and not(Study)">
-					<hr/>
-					<h2>No Submission Sets Found</h2>
 				</xsl:if>
 
 			</form>

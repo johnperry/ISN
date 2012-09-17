@@ -8,6 +8,7 @@
 package org.rsna.isn.ctp.xds.receiver;
 
 import java.io.File;
+import java.util.List;
 import org.apache.log4j.Logger;
 import org.rsna.ctp.Configuration;
 import org.rsna.ctp.objects.FileObject;
@@ -28,6 +29,7 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 
 	static final Logger logger = Logger.getLogger(PollingXDSImportService.class);
 
+	File queue = null;
 	File active = null;
 	String activePath = "";
 	File temp = null;
@@ -37,8 +39,8 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 	long lastPollTime = 0L;
 	int interval = 60;
 
-	String siteID;
-	XDSFileSource fileSource = null;
+	String[] siteIDs;
+	DocSetDB docsetDB;
 
 	Poller poller = null;
 
@@ -53,9 +55,8 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 		super(element);
 		if (root == null) logger.error(name+": No root directory was specified.");
 
-		temp = new File(root, "xds");
-		temp.mkdirs();
-		File queue = new File(root, "queue");
+		//Set up the QueueManager
+		queue = new File(root, "queue");
 		queueManager = new QueueManager(queue, 0, 0); //use default settings
 		active = new File(root, "active");
 		active.mkdirs();
@@ -74,6 +75,13 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 		//so in configurations with multiple stages that call this method, the multiple
 		//calls don't cause a problem.
 		SOAPSetup.init();
+
+		//Make a database to filter out studies that have already been downloaded
+		File dbdir = new File(root, "database");
+		docsetDB = new DocSetDB(dbdir, false);
+
+		//Get the site IDs on which to poll
+		siteIDs = element.getAttribute("siteID").trim().split("\\s+");
 	}
 
 	/**
@@ -89,9 +97,6 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 		XDSConfiguration.load(element);
 
 		try {
-			//Instantiate the XDSFileSource
-			fileSource = new XDSFileSource(element, temp, null);
-
 			//Instantiate the Poller and start it.
 			poller = new Poller();
 			poller.start();
@@ -168,8 +173,7 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 	 */
 	public String getStatusHTML() {
 		String stageUniqueStatus =
-			"<tr><td width=\"20%\">Files received:</td><td>" + count + "</td></tr>"
-			+ "<tr><td width=\"20%\">Queue size:</td>"
+			"<tr><td width=\"20%\">Queue size:</td>"
 			+ "<td>" + ((queueManager!=null) ? queueManager.size() : "???") + "</td></tr>"
 			+ "<tr><td width=\"20%\">Last poll time:</td>"
 			+ "<td>" + StringUtil.getTime(lastPollTime,":") + "</td></tr>";
@@ -178,25 +182,58 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 
 	//The class to poll the XDSFileSource and enqueue files.
 	class Poller extends Thread {
-		public Poller() { }
+
+		File xds;
+		Timer t;
+
+		public Poller() {
+			xds = new File(root, "xds");
+			xds.mkdirs();
+		}
 
 		public void run() {
-			File file;
+
 			while (!stop) {
 				lastPollTime = System.currentTimeMillis();
-				if ( (file=fileSource.getFile()) != null ) {
-					queueManager.enqueue(file);
-					file.delete();
-					count++;
-					lastFileIn = file;
-					lastTimeIn = System.currentTimeMillis();
-				}
-				else {
-					try { Thread.sleep(interval); }
-					catch (Exception ex) { }
-				}
+				t = new Timer();
+				for (String siteID : siteIDs) poll(siteID);
+				logger.debug("-----------------Clearinghouse polling complete: "+t.getElapsedTime());
+
+				try { Thread.sleep(interval); }
+				catch (Exception ignore) { }
 			}
-			fileSource.shutdown();
+		}
+
+		private void poll(String siteID) {
+			try {
+				logger.debug("Polling on key: \""+siteID+"\"");
+
+				RetrieveDocuments rd = new RetrieveDocuments(xds, docsetDB, siteID);
+
+				//Get the KOS and reports for studies under this siteID
+				logger.debug("About to get the list of SubmissionSets");
+				List<DocumentInfo> docInfoList = rd.getSubmissionSets();
+				logger.debug("..."+docInfoList.size()+" new SubmissionSet(s) found");
+
+				//get images for each study
+				int numOfDocs = 0;
+				for (DocumentInfo docInfo : docInfoList) {
+					logger.debug("About to retrieve study: "+docInfo.getDocumentUniqueID());
+					numOfDocs += rd.getStudy(docInfo, queueManager);
+					logger.debug("...done retrieving "+docInfo.getDocumentUniqueID());
+				}
+
+				//The getStudy method automatically enqueues the images,
+				//but it doesn't do the KOS and reports. They remain in
+				//the xds directory, so we enqueue them now. The enqueueDir
+				//method removes the files as it enqueues them, so when this
+				//method finishes, the xds directory is empty.
+				queueManager.enqueueDir(xds);
+			}
+			catch (Exception ex) {
+				logger.debug("Unable to poll on siteID: \""+siteID+"\"", ex);
+			}
+
 		}
 	}
 

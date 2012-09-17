@@ -35,6 +35,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
+import org.rsna.ctp.pipeline.QueueManager;
 import org.rsna.isn.ctp.xds.rad69.RegistryErrorList;
 import org.rsna.isn.ctp.xds.rad69.RetrieveDocumentSetRequestType.DocumentRequest;
 import org.rsna.isn.ctp.xds.rad69.RetrieveDocumentSetResponseType;
@@ -115,24 +116,20 @@ public class RetrieveDocuments {
                 input43.setDownloadDIR(tmp.getAbsolutePath().toString());
 
                 //Loop through all submissionSetIDs under this siteID
-                Iterator ssItr = docList.keySet().iterator();
-                while (ssItr.hasNext()) {
-                    String submissionSetID = (String) ssItr.next();
+				for (String submissionSetID : docList.keySet()) {
                     //if the submissionID has been retrieved, then go to next one
                     if (!docsetDB.contains(submissionSetID)) {
                         logger.debug("Get documents for submissionSetID " + submissionSetID);
 
                         //get all documents under this submissionSetID and store in tmp folder
-                        Iterator<String> docItr = docList.get(submissionSetID).iterator();
-                        while (docItr.hasNext()) {
-                            String docID = docItr.next();
+                        for (String docID : docList.get(submissionSetID)) {
 
                             input43.setDocumentUniqueId(docID);
                             File downloadedFile = query43.queryDocuments(input43, siteID);
 
                             //if a file was retrieved, check if KOS then fill in docInfo object
                             //else add to reportFiles list
-                            if (downloadedFile.getAbsolutePath().toString() != null) {
+                            if (downloadedFile != null) {
                                 try {
                                     docInfo = processFile(downloadedFile, docID);
                                     if (docInfo == null) {
@@ -150,7 +147,7 @@ public class RetrieveDocuments {
 
                         docsetDB.addID(submissionSetID);
 
-                        //Convert report files to XML and assoiciate with studyUID
+                        //Convert report files to XML and associate with studyUID
                         if (studyUID.length() > 0) {
                             for(File f : reportFiles){
                                 convertToXML(f.getName(), studyUID, f);
@@ -160,6 +157,7 @@ public class RetrieveDocuments {
                             reportFiles.clear();
                         }
                     }
+                    logger.debug("Skipping previously downloaded submission set: "+submissionSetID);
                 }
             }
         } catch (Exception e) {
@@ -170,11 +168,11 @@ public class RetrieveDocuments {
     }
 
     /**
-    * Retrieve images for a given studay
+    * Retrieve images for a studay
     * @param docInfo study meta data
-    * @return number of images were retrieved
+    * @return number of images that were retrieved
     */
-    public int getStudy (DocumentInfo docInfo) {
+    public int getStudy (DocumentInfo docInfo, QueueManager queueManager) {
         int imageCounter = 0;
         int imagesOfStudy = 0;
 
@@ -304,7 +302,9 @@ public class RetrieveDocuments {
 											fos = new FileOutputStream(dcmFile);
 											dh.writeTo(fos);
 											fos.close();
-											logger.debug("saved "+dcmFile);
+											queueManager.enqueue(dcmFile);
+											dcmFile.delete();
+											logger.debug("enqueued "+dcmFile);
                                        } catch (Exception e) {
                                             logger.error("Error saving file for studyUID#" + studyInstanceUID, e);
                                        }
@@ -327,20 +327,6 @@ public class RetrieveDocuments {
             logger.error("getStudy Error for["+docInfo.getStudyInstanceUID()+"]:"+e.getMessage(),e);
         }
         return imagesOfStudy;
-    }
-
-    /**
-    * Move all retrieved files from tmp to queue.
-    */
-    public void moveFiles() {
-        try {
-        for (File fs : tmp.listFiles()){
-            File fd = new File(queue, fs.getName());
-            fs.renameTo(fd);
-        }
-        } catch (Exception e) {
-            logger.error("Unable to move file to queue:" + e.getMessage());
-        }
     }
 
     private RetrieveDocumentSetResponseType imagingDocumentSourceRetrieveImagingDocumentSet(org.rsna.isn.ctp.xds.rad69.RetrieveImagingDocumentSetRequestType body) {
@@ -400,22 +386,22 @@ public class RetrieveDocuments {
     }
 
     /**
-        * Convert a text report file to XML.
-        * @param uid the object UID
-        * @param studyUID the StudyInstanceUID of the study to which the report belongs
-        * @return the file pointing to the converted report
-        */
+	 * Convert a text report file to XML.
+	 * @param uid the object UID
+	 * @param studyUID the StudyInstanceUID of the study to which the report belongs
+	 * @return the file pointing to the converted report
+	 */
     private File convertToXML(String uid, String studyUID, File file) {
         try {
-                String text = FileUtil.getText(file);
-                Document doc = XmlUtil.getDocument();
-                Element root = doc.createElement("Report");
-                doc.appendChild(root);
-                root.setAttribute("uid", uid);
-                root.setAttribute("StudyInstanceUID", studyUID);
-                CDATASection cdata = doc.createCDATASection(text);
-                root.appendChild(cdata);
-                FileUtil.setText(file, XmlUtil.toString(doc));
+			String text = FileUtil.getText(file);
+			Document doc = XmlUtil.getDocument();
+			Element root = doc.createElement("Report");
+			doc.appendChild(root);
+			root.setAttribute("uid", uid);
+			root.setAttribute("StudyInstanceUID", studyUID);
+			CDATASection cdata = doc.createCDATASection(text);
+			root.appendChild(cdata);
+			FileUtil.setText(file, XmlUtil.toString(doc));
         }
         catch (Exception returnUnmodifiedFile) { }
         return file;
