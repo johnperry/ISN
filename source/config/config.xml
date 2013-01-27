@@ -1,10 +1,15 @@
-<Configuration log="yes">
+<Configuration>
     <Server port="1080"
     	ssl="no"
         keystore="keystore.jks"
         keystorePassword="edge1234"
         truststore="truststore.jks"
         truststorePassword="edge1234"/>
+    <Plugin
+        name="ISN AuditLog"
+        id="AuditLog"
+        class="org.rsna.ctp.stdplugins.AuditLog"
+        root="roots/ISN/AuditLog"/>
     <Pipeline name="Research Sender">
         <DicomImportService
             calledAETTag="00120010"
@@ -40,6 +45,7 @@
             iti41="https://clearinghouse.lifeimage.com/services/xdsrepositoryb"
             iti41SrcId="1.3.6.1.4.1.19376.2.840.1.1.2.1"
             timeout="120000"
+            auditLogID="AuditLog"
             quarantine="quarantines/Sender/CachingXDSExportService-RS">
 
             <Destination

@@ -5,6 +5,7 @@
 <xsl:param name="context"/>
 <xsl:param name="sentStudies"/>
 <xsl:param name="destinations"/>
+<xsl:param name="home">yes</xsl:param>
 
 <xsl:template match="/Studies">
 	<html>
@@ -17,6 +18,7 @@
 			<title>Send Studies</title>
 		</head>
 		<body>
+			<xsl:call-template name="home"/>
 			<h1>Send Studies to the RSNA Image Share</h1>
 
 			<form id="formID" action="" method="POST" accept-charset="UTF-8" >
@@ -142,6 +144,17 @@
 			<li>FAILED: The transmission failed.</li>
 		</ul>
 	</p>
+</xsl:template>
+
+<xsl:template name="home">
+	<xsl:if test="$home='yes'">
+		<div style="float:right;">
+			<img src="/icons/home.png"
+				 onclick="window.open('/','_self');"
+				 title="Home"
+				 style="margin:2"/>
+		</div>
+	</xsl:if>
 </xsl:template>
 
 </xsl:stylesheet>

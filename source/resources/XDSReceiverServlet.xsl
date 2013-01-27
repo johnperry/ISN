@@ -3,6 +3,7 @@
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="yes" />
 
 <xsl:param name="message"/>
+<xsl:param name="home">yes</xsl:param>
 
 <xsl:template match="/Studies">
 	<html>
@@ -16,7 +17,7 @@
 			</script>
 		</head>
 		<body>
-
+			<xsl:call-template name="home"/>
 			<h1>Retrieve Studies from the RSNA Image Share</h1>
 
 			<form id="formID" action="" method="POST" accept-charset="UTF-8" >
@@ -90,6 +91,17 @@
 		<th>Study Date</th>
 		<th>Study Description</th>
 	</tr>
+</xsl:template>
+
+<xsl:template name="home">
+	<xsl:if test="$home='yes'">
+		<div style="float:right;">
+			<img src="/icons/home.png"
+				 onclick="window.open('/','_self');"
+				 title="Home"
+				 style="margin:2"/>
+		</div>
+	</xsl:if>
 </xsl:template>
 
 </xsl:stylesheet>

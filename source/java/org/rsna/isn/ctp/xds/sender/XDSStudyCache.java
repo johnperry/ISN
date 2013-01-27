@@ -13,8 +13,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.Hashtable;
 import org.apache.log4j.Logger;
+import org.rsna.ctp.Configuration;
 import org.rsna.ctp.objects.*;
 import org.rsna.ctp.pipeline.Status;
+import org.rsna.ctp.stdplugins.AuditLog;
 import org.rsna.util.FileUtil;
 import org.rsna.util.XmlUtil;
 import org.w3c.dom.Document;
@@ -35,6 +37,8 @@ public class XDSStudyCache {
 	private String context;
 	private XDSDatabase database;
 	private ExecutorService execSvc;
+	private AuditLog auditLog = null;
+	private String auditLogID = null;
 
 	final int maxThreads = 4;
 
@@ -52,7 +56,7 @@ public class XDSStudyCache {
 		indexRoot.mkdirs();
 		this.database = new XDSDatabase(indexRoot);
 		this.execSvc = Executors.newFixedThreadPool( maxThreads );
-
+		this.auditLogID = element.getAttribute("auditLogID").trim();
 	}
 
 	/**
@@ -312,6 +316,7 @@ public class XDSStudyCache {
 					logger.debug("XdsSender.submit returned "+status.toString()+" at "+timer.getTimeString());
 					if (status.equals(Status.OK)) {
 						study.setStatus( XDSStudyStatus.SUCCESS );
+						makeAuditLogEntry(study);
 					}
 					else {
 						study.setStatus( XDSStudyStatus.FAILED );
@@ -338,6 +343,33 @@ public class XDSStudyCache {
 				database.put(study);
 			}
 		}
+
+		private void makeAuditLogEntry(XDSStudy study) {
+			auditLog = (AuditLog)Configuration.getInstance().getRegisteredPlugin(auditLogID);
+			if (auditLog != null) {
+				String entry;
+				try {
+					Document doc = XmlUtil.getDocument();
+					Element root = doc.createElement("XDSStudyCache");
+					root.setAttribute("Action", "send");
+					root.setAttribute("Destination", study.getDestination());
+					root.setAttribute("DestinationName", study.getDestinationName());
+					Document xml = study.getXML();
+					Element studyElement = (Element)doc.importNode(xml.getDocumentElement(), true);
+					root.appendChild(studyElement);
+					entry = XmlUtil.toPrettyString(root);
+					logger.debug("AuditLog entry:\n"+entry);
+				}
+				catch (Exception ex) {
+					logger.warn("Unable to construct the AuditLog entry", ex);
+					entry = "<XDSStudyCache/>";
+				}
+
+				try { auditLog.addEntry(entry, "xml", study.getPatientID(), study.getStudyUID(), null); }
+				catch (Exception ex) { logger.warn("Unable to insert the AuditLog entry"); }
+			}
+		}
+
 	}
 
 	class Timer {

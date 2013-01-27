@@ -36,7 +36,6 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 	String servletContext = "";
 	long minAge = 300;
 	int count = 0;
-	long timeDepth = 0;
 	String objectCacheID = "";
 	ObjectCache objectCache = null;
 	boolean deleteOnTransmission = true;
@@ -54,7 +53,6 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		root.mkdirs();
 
 		minAge = Math.max( StringUtil.getLong(element.getAttribute("minAge")), minAge ) * 1000;
-		timeDepth = StringUtil.getLong(element.getAttribute("timeDepth"));
 		deleteOnTransmission = !element.getAttribute("deleteOnTransmission").equals("no");
 
 		//The objectCacheID is the id of a stage that holds the original (PHI) version of an object.
@@ -65,7 +63,7 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		//(which knows its context) to obtain the singleton instance of the study cache associated with
 		//this stage. If the servletContext is missing, "xds-export" is supplied as the default, but in
 		//a configuration with multiple CachingXDSExportService stages, it is important that the stages
-		//have different servletContexts, so a warning is issued when the default is supplied.
+		//have different servletContexts, so a warning is issued if no context is supplied.
 		servletContext = element.getAttribute("servletContext").trim();
 		if (servletContext.equals("")) {
 			logger.warn("Missing servletContext, using \"xds-export\".");

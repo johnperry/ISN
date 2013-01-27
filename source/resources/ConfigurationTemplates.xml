@@ -1,0 +1,97 @@
+<TemplateDefinitions>
+
+	<Components>
+
+		<ImportService>
+			<attr name="name" required="yes" default="XDSImportService-CR"/>
+			<attr name="class" required="yes" default="org.rsna.isn.ctp.xds.receiver.XDSImportService" editable="no"/>
+			<attr name="root" required="yes" default="roots/ClinicalReceiver/XDSImportService-CR"/>
+			<attr name="rad69URL" required="yes" default="https://clearinghouse.lifeimage.com/ImagingDocumentSource_Service?wsdl"/>
+			<attr name="registryURL" required="yes" default="https://clearinghouse.lifeimage.com/services/xdsregistryb"/>
+			<attr name="repositoryUniqueID" required="yes" default="rsna.domain.repository"/>
+			<attr name="assigningAuthorityUniversalID" required="yes" default="1.3.6.1.4.1.19376.2.840.1.1.1.1"/>
+			<attr name="assigningAuthorityUniversalIDType" required="yes" default="ISO"/>
+			<attr name="homeCommunityID" required="yes" default="rsna.domain&lt;/HomeCommunityId"/>
+			<attr name="imagesPerRequest" required="yes" default="100">
+				<helptext>The maximum number of images to retrieve in a single request</helptext>
+			</attr>
+			<attr name="timeout" required="yes" default="120000">
+				<helptext>Request timeout in milliseconds</helptext>
+			</attr>
+			<attr name="servletContext" required="yes" default="xds-import">
+				<helptext>The context under which the clinical receiver servlet is to be installed</helptext>
+			</attr>
+		</ImportService>
+
+		<ImportService>
+			<attr name="name" required="yes" default="PollingXDSImportService-RR"/>
+			<attr name="class" required="yes" default="org.rsna.isn.ctp.xds.receiver.PollingXDSImportService" editable="no"/>
+			<attr name="root" required="yes" default="roots/ResearchReceiver/PollingXDSImportService-RR"/>
+			<attr name="rad69URL" required="yes" default="https://clearinghouse.lifeimage.com/ImagingDocumentSource_Service?wsdl"/>
+			<attr name="registryURL" required="yes" default="https://clearinghouse.lifeimage.com/services/xdsregistryb"/>
+			<attr name="repositoryUniqueID" required="yes" default="rsna.domain.repository"/>
+			<attr name="assigningAuthorityUniversalID" required="yes" default="1.3.6.1.4.1.19376.2.840.1.1.1.1"/>
+			<attr name="assigningAuthorityUniversalIDType" required="yes" default="ISO"/>
+			<attr name="homeCommunityID" required="yes" default="rsna.domain&lt;/HomeCommunityId"/>
+			<attr name="interval" required="yes" default="60">
+				<helptext>Minimum Clearinghouse polling interval in seconds</helptext>
+			</attr>
+			<attr name="siteID" required="yes" default="9652fef890fe9b5de17f2116e971f153d7d655c3b57fef6012a2138239e34d20">
+				<helptext>The ID of the receiving site</helptext>
+			</attr>
+			<attr name="imagesPerRequest" required="yes" default="100">
+				<helptext>The maximum number of images to retrieve in a single request</helptext>
+			</attr>
+			<attr name="timeout" required="yes" default="120000">
+				<helptext>Clearinghouse request timeout in milliseconds</helptext>
+			</attr>
+		</ImportService>
+
+		<ExportService>
+			<attr name="name" required="yes" default="CachingXDSExportService-RS"/>
+			<attr name="class" required="yes" default="org.rsna.isn.ctp.xds.sender.CachingXDSExportService" editable="no"/>
+			<attr name="root" required="yes" default="roots/Sender/CachingXDSExportService-RS"/>
+			<attr name="objectCacheID" required="no" default="ObjectCache-RS">
+				<helptext>The ID of the ObjectCache stage from which to obtain PHI for display</helptext>
+			</attr>
+			<attr name="minAge" required="no" default="300">
+				<helptext>Minimum age in seconds before a case is considered complete</helptext>
+			</attr>
+			<attr name="iti8Pix" required="yes" default="mllps://clearinghouse.lifeimage.com:8888"/>
+			<attr name="iti8Reg" required="yes" default="mllps://clearinghouse.lifeimage.com:8890"/>
+			<attr name="iti41" required="yes" default="https://clearinghouse.lifeimage.com/services/xdsrepositoryb"/>
+			<attr name="iti41SrcId" required="yes" default="1.3.6.1.4.1.19376.2.840.1.1.2.1"/>
+			<attr name="timeout" required="yes" default="120000">
+				<helptext>Clearinghouse request timeout in milliseconds</helptext>
+			</attr>
+			<attr name="servletContext" required="yes" default="xds-import">
+				<helptext>The context under which the research sender servlet is to be installed</helptext>
+			</attr>
+			<attr name="auditLogID" required="no" default=""/>
+			<attr name="auditLogTags" required="no" default=""/>
+			<attr name="quarantine" required="yes" default="quarantines/Sender/CachingXDSExportService-RS"/>
+
+			<child name="Destination" required="yes" allowMultiples="yes">
+				<attr name="key" required="yes" default="">
+					<helptext>The key identifying the destination site</helptext>
+				</attr>
+				<attr name="name" required="yes" default="Trial">
+					<helptext>The name of the destination site for display on the web page</helptext>
+				</attr>
+				<attr name="token" required="no" default="">
+					<helptext>The six-chacter token used to create the key (for documentation only)</helptext>
+				</attr>
+				<attr name="dob" required="no" default="">
+					<helptext>The date of birth used to create the key (for documentation only)</helptext>
+				</attr>
+				<attr name="pw" required="no" default="">
+					<helptext>The password used to create the key (for documentation only)</helptext>
+				</attr>
+			</child>
+
+		</ExportService>
+
+	</Components>
+
+</TemplateDefinitions>
+

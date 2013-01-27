@@ -36,6 +36,8 @@
 			function hideAdmin() {
 				var x = document.getElementById("adminDiv");
 				if (x) x.parentNode.removeChild(x);
+				x = document.getElementById("auditLog");
+				if (x) x.parentNode.removeChild(x);
 			}
 			function disable(id) {
 				var x = document.getElementById(id);
@@ -51,12 +53,10 @@
 
 		<table>
 			</tr>
-				<td>&nbsp;</td>
-				<td>
+				<td colspan="2" style="text-align:center">
 					<input style="width:125" type="button" value="Login"
 						onclick="window.open('login','_self');">
 				</td>
-				<td>&nbsp;</td>
 			</tr>
 			</tr><td>&nbsp;</td></tr>
 			<tr>
@@ -68,9 +68,18 @@
 					<input id="importID" style="width:125" type="button" value="Receive"
 						onclick="window.open('/xds-import','_self');">
 				</td>
-				<td>
+			</tr>
+			</tr><td>&nbsp;</td></tr>
+			<tr>
+				<td colspan="2" style="text-align:center">
 					<input style="width:125" type="button" value="Tools"
-						onclick="window.open('/isn-tool','_self');">
+						onclick="window.open('/isn-tool','CTP');">
+				</td>
+			</tr>
+			<tr id="auditLog">
+				<td colspan="2" style="text-align:center">
+					<input style="width:125" type="button" value="Audit Log"
+						onclick="window.open('/AuditLog','AUDIT');">
 				</td>
 			</tr>
 		</table>
