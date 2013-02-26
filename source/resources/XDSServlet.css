@@ -22,6 +22,10 @@ h2 {
 	
 hr { width: 70%; }
 
+div.center {
+	text-align: center;
+}
+
 p {
 	text-align: left;
 	font-size: small;

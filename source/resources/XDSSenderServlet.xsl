@@ -5,7 +5,7 @@
 <xsl:param name="context"/>
 <xsl:param name="sentStudies"/>
 <xsl:param name="destinations"/>
-<xsl:param name="home">yes</xsl:param>
+<xsl:param name="home">no</xsl:param>
 
 <xsl:template match="/Studies">
 	<html>
@@ -21,6 +21,7 @@
 			<xsl:call-template name="home"/>
 			<h1>Send Studies to the RSNA Image Share</h1>
 
+			<div class="center">
 			<form id="formID" action="" method="POST" accept-charset="UTF-8" >
 
 				<xsl:if test="Study">
@@ -57,6 +58,7 @@
 					</p>
 				</xsl:if>
 			</form>
+			</div>
 
 			<xsl:if test="not(Study)">
 				<p class="bold">No studies are available for transmission.</p>

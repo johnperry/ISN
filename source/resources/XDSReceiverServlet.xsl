@@ -3,7 +3,7 @@
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="yes" />
 
 <xsl:param name="message"/>
-<xsl:param name="home">yes</xsl:param>
+<xsl:param name="home">no</xsl:param>
 
 <xsl:template match="/Studies">
 	<html>
@@ -20,6 +20,7 @@
 			<xsl:call-template name="home"/>
 			<h1>Retrieve Studies from the RSNA Image Share</h1>
 
+			<div class="center">
 			<form id="formID" action="" method="POST" accept-charset="UTF-8" >
 
 				<p>
@@ -80,6 +81,7 @@
 				</xsl:if>
 
 			</form>
+			</div>
 		</body>
 	</html>
 </xsl:template>

@@ -93,5 +93,137 @@
 
 	</Components>
 
+	<StandardPipelines>
+
+		<Pipeline name="ISN Research Sender">
+			<DicomImportService
+				calledAETTag="00120010"
+				class="org.rsna.ctp.stdstages.DicomImportService"
+				logConnections="rejected"
+				name="DicomImportService"
+				port="1081"
+				quarantine="quarantines/Sender/DicomImportService"
+				root="roots/Sender/DicomImportService"
+				servletContext="export" />
+			<ObjectCache
+				name="ObjectCache-RS"
+				class="org.rsna.ctp.stdstages.ObjectCache"
+				id="ObjectCache-RS"
+				root="roots/Sender/ObjectCache-RS" />
+			<DicomAnonymizer
+				class="org.rsna.ctp.stdstages.DicomAnonymizer"
+				lookupTable="scripts/lookup-table.properties"
+				name="DicomAnonymizer"
+				quarantine="quarantines/Sender/DicomAnonymizer"
+				root="roots/Sender/DicomAnonymizer"
+				script="scripts/Sender.script"/>
+			<CachingXDSExportService
+				servletContext="xds-export"
+				name="CachingXDSExportService-RS"
+				class="org.rsna.isn.ctp.xds.sender.CachingXDSExportService"
+				root="roots/Sender/CachingXDSExportService-RS"
+				objectCacheID="ObjectCache-RS"
+				minAge="300"
+				timeDepth="30"
+				iti8Pix="mllps://clearinghouse.lifeimage.com:8888"
+				iti8Reg="mllps://clearinghouse.lifeimage.com:8890"
+				iti41="https://clearinghouse.lifeimage.com/services/xdsrepositoryb"
+				iti41SrcId="1.3.6.1.4.1.19376.2.840.1.1.2.1"
+				timeout="120000"
+				auditLogID="AuditLog"
+				quarantine="quarantines/Sender/CachingXDSExportService-RS">
+				<Destination
+					name="Trial S"
+					key="9652fef890fe9b5de17f2116e971f153d7d655c3b57fef6012a2138239e34d20"
+					token="fpzddg"
+					dob="19460201"
+					pw="quackquack"/>
+				<Destination
+					name="Trial T"
+					key="e03c75ab7056c94335e3f06a6e81331a973413efc3474ff7a508ce842a3630ea"
+					token="63x4ec"
+					dob="19460201"
+					pw="quackquack"/>
+			</CachingXDSExportService>
+		</Pipeline>
+
+		<Pipeline name="ISN Research Receiver">
+			<PollingXDSImportService
+			name="PollingXDSImportService-RR"
+				class="org.rsna.isn.ctp.xds.receiver.PollingXDSImportService"
+				root="roots/ResearchReceiver/PollingXDSImportService"
+				interval="60"
+				rad69URL="https://clearinghouse.lifeimage.com/ImagingDocumentSource_Service?wsdl"
+				registryURL="https://clearinghouse.lifeimage.com/services/xdsregistryb"
+				repositoryURL="https://clearinghouse.lifeimage.com/services/xdsrepositoryb"
+				repositoryUniqueID="rsna.domain.repository"
+				assigningAuthorityUniversalID="1.3.6.1.4.1.19376.2.840.1.1.1.1"
+				assigningAuthorityUniversalIDType="ISO"
+				homeCommunityID="rsna.domain&lt;/HomeCommunityId"
+				siteID="9652fef890fe9b5de17f2116e971f153d7d655c3b57fef6012a2138239e34d20"
+				imagesPerRequest="100"
+				timeout="120000" />
+			<ObjectLogger
+				name="ObjectLogger-RR"
+				class="org.rsna.ctp.stdstages.ObjectLogger"
+				interval="1"
+				verbose="yes" />
+			<FileStorageService
+				class="org.rsna.ctp.stdstages.FileStorageService"
+				name="FileStorageService-RR"
+				port="1086"
+				quarantine="quarantines/ResearchReceiver/FileStorageService"
+				root="roots/ResearchReceiver/FileStorageService"/>
+			<!--
+			<DicomExportService
+				name="DicomExportService-RR"
+				class="org.rsna.ctp.stdstages.DicomExportService"
+				root="roots/ResearchReceiver/DicomExportService"
+				quarantine="quarantines/ResearchReceiver/DicomExportService"
+				url="dicom://DestinationAET:ThisAET@ipaddress:port"
+				interval="5000" />
+			-->
+		</Pipeline>
+
+		<Pipeline name="ISN Clinical Receiver">
+			<XDSImportService
+				name="XDSImportService-CR"
+				class="org.rsna.isn.ctp.xds.receiver.XDSImportService"
+				root="roots/ClinicalReceiver/XDSImportService-CR"
+				interval="60"
+				rad69URL="https://clearinghouse.lifeimage.com/ImagingDocumentSource_Service?wsdl"
+				registryURL="https://clearinghouse.lifeimage.com/services/xdsregistryb"
+				repositoryURL="https://clearinghouse.lifeimage.com/services/xdsrepositoryb"
+				repositoryUniqueID="rsna.domain.repository"
+				assigningAuthorityUniversalID="1.3.6.1.4.1.19376.2.840.1.1.1.1"
+				assigningAuthorityUniversalIDType="ISO"
+				homeCommunityID="rsna.domain&lt;/HomeCommunityId"
+				imagesPerRequest="100"
+				timeout="120000"
+				servletContext="xds-import" />
+			<ObjectLogger
+				name="ObjectLogger-CR"
+				class="org.rsna.ctp.stdstages.ObjectLogger"
+				interval="1"
+				verbose="yes" />
+			<FileStorageService
+				class="org.rsna.ctp.stdstages.FileStorageService"
+				name="FileStorageService"
+				port="1087"
+				quarantine="quarantines/ClinicalReceiver/FileStorageService"
+				root="roots/ClinicalReceiver/FileStorageService"/>
+			<!--
+			<DicomExportService
+				name="DicomExportService-CR"
+				class="org.rsna.ctp.stdstages.DicomExportService"
+				root="roots/ClinicalReceiver/DicomExportService"
+				quarantine="quarantines/ClinicalReceiver/DicomExportService"
+				url="dicom://DestinationAET:ThisAET@ipaddress:port"
+				interval="5000" />
+			-->
+		</Pipeline>
+
+	</StandardPipelines>
+
 </TemplateDefinitions>
 
