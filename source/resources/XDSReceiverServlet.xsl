@@ -23,7 +23,7 @@
 			<div class="center">
 			<form id="formID" action="" method="POST" accept-charset="UTF-8" >
 
-				<p>
+				<p class="center">
 					<table border="0">
 						<tr>
 							<td>
@@ -51,7 +51,7 @@
 
 				<xsl:if test="Study">
 					<hr/>
-					<p>
+					<p class="center">
 						<table border="0">
 							<tr>
 								<td>

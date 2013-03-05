@@ -11,7 +11,7 @@
 				<td><xsl:value-of select="@patientID"/></td>
 				<td><xsl:value-of select="@patientName"/></td>
 				<td title="UID: {@studyUID}"><xsl:value-of select="@studyDate"/></td>
-				<xsl:call-template name="ModalityBodypart"/>
+				<xsl:call-template name="Description"/>
 				<td class="right"><xsl:value-of select="@size"/></td>
 				<td class="right"><xsl:value-of select="@objectsSent"/></td>
 				<td>
@@ -36,6 +36,14 @@
 		<th>Destination</th>
 		<th>Status</th>
 	</tr>
+</xsl:template>
+
+<xsl:template name="Description">
+	<td class="center">
+		<xsl:variable name="dsc" select="normalize-space(@description)"/>
+		<xsl:if test="$dsc"><xsl:value-of select="$dsc"/></xsl:if>
+		<xsl:if test="not($dsc)">&#160;</xsl:if>
+	</td>
 </xsl:template>
 
 <xsl:template name="ModalityBodypart">

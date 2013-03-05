@@ -35,6 +35,15 @@ p {
 	text-align: center;
 }
 
+p.center {
+	text-align: center;
+	font-size: small;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	margin-bottom: 15;
+	text-align: center;
+}
+
 p.bold {
  	font-weight: bold;
 }
