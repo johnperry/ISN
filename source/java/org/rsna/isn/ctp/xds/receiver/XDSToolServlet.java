@@ -107,7 +107,7 @@ public class XDSToolServlet extends Servlet {
 
 			//Make some random tokens
 			StringBuffer tokens = new StringBuffer();
-			for (int i=0; i<25; i++) {
+			for (int i=0; i<10; i++) {
 				tokens.append(
 					org.apache.commons.lang.RandomStringUtils.random(6, "ybndrfg8ejkmcpqxotluwisza34h769")
 					+ " ");

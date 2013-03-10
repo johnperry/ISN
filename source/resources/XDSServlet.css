@@ -65,6 +65,10 @@ ul {
 	margin-top: 5;
 }
 
+p.center table {
+	margin: 0 auto;
+}
+
 th {
 	font-size: x-small;
 	font-family: Verdana, Arial, Helvetica, sans-serif;

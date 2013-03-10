@@ -36,6 +36,7 @@
 							<option value="0">Remove from List</option>
 						</select>
 					</p>
+					<center>
 					<p class="center">
 						<table border="1">
 							<xsl:call-template name="StudyHeadings"/>
@@ -53,6 +54,7 @@
 							</xsl:for-each>
 						</table>
 					</p>
+					</center>
 					<p class="center">
 						<input type="submit" class="button" value="Send"/>
 					</p>
@@ -67,7 +69,8 @@
 			<xsl:if test="$sentStudies/Studies/Study">
 				<hr/>
 				<h2>Sent Studies</h2>
-				<p>
+				<center>
+				<p class="center">
 					<table id="SentStudiesTable" border="1">
 						<xsl:call-template name="SentStudyHeadings"/>
 						<xsl:for-each select="$sentStudies/Studies/Study">
@@ -85,6 +88,7 @@
 						</xsl:for-each>
 					</table>
 				</p>
+				</center>
 			</xsl:if>
 
 			<xsl:call-template name="footer"/>
