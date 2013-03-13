@@ -31,11 +31,11 @@
 				<p>
 					<table border="1">
 						<tr>
-							<td>Exam ID:</td>
+							<td>Token/Exam ID:</td>
 							<td><input name="usertoken" type="text"/></td>
 						</tr>
 						<tr>
-							<td>PIN/Password:</td>
+							<td>Password/PIN:</td>
 							<td><input name="password" type="text"/></td>
 						</tr>
 						<tr>
@@ -55,11 +55,11 @@
 					<p>
 						<table border="1">
 							<tr>
-								<td>Exam ID:</td>
+								<td>Token/Exam ID:</td>
 								<td><xsl:value-of select="$token"/></td>
 							</tr>
 							<tr>
-								<td>PIN/Password:</td>
+								<td>Password/PIN:</td>
 								<td><xsl:value-of select="$pw"/></td>
 							</tr>
 							<tr>

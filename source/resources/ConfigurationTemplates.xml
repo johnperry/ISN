@@ -78,15 +78,6 @@
 				<attr name="name" required="yes" default="Trial">
 					<helptext>The name of the destination site for display on the web page</helptext>
 				</attr>
-				<attr name="token" required="no" default="">
-					<helptext>The six-chacter token used to create the key (for documentation only)</helptext>
-				</attr>
-				<attr name="dob" required="no" default="">
-					<helptext>The date of birth used to create the key (for documentation only)</helptext>
-				</attr>
-				<attr name="pw" required="no" default="">
-					<helptext>The password used to create the key (for documentation only)</helptext>
-				</attr>
 			</child>
 
 		</ExportService>
@@ -134,16 +125,10 @@
 				quarantine="quarantines/Sender/CachingXDSExportService-RS">
 				<Destination
 					name="Trial S"
-					key="9652fef890fe9b5de17f2116e971f153d7d655c3b57fef6012a2138239e34d20"
-					token="fpzddg"
-					dob="19460201"
-					pw="quackquack"/>
+					key="9652fef890fe9b5de17f2116e971f153d7d655c3b57fef6012a2138239e34d20"/>
 				<Destination
 					name="Trial T"
-					key="e03c75ab7056c94335e3f06a6e81331a973413efc3474ff7a508ce842a3630ea"
-					token="63x4ec"
-					dob="19460201"
-					pw="quackquack"/>
+					key="e03c75ab7056c94335e3f06a6e81331a973413efc3474ff7a508ce842a3630ea"/>
 			</CachingXDSExportService>
 		</Pipeline>
 
@@ -174,15 +159,6 @@
 				port="1086"
 				quarantine="quarantines/ResearchReceiver/FileStorageService"
 				root="roots/ResearchReceiver/FileStorageService"/>
-			<!--
-			<DicomExportService
-				name="DicomExportService-RR"
-				class="org.rsna.ctp.stdstages.DicomExportService"
-				root="roots/ResearchReceiver/DicomExportService"
-				quarantine="quarantines/ResearchReceiver/DicomExportService"
-				url="dicom://DestinationAET:ThisAET@ipaddress:port"
-				interval="5000" />
-			-->
 		</Pipeline>
 
 		<Pipeline name="ISN Clinical Receiver">
@@ -212,15 +188,6 @@
 				port="1087"
 				quarantine="quarantines/ClinicalReceiver/FileStorageService"
 				root="roots/ClinicalReceiver/FileStorageService"/>
-			<!--
-			<DicomExportService
-				name="DicomExportService-CR"
-				class="org.rsna.ctp.stdstages.DicomExportService"
-				root="roots/ClinicalReceiver/DicomExportService"
-				quarantine="quarantines/ClinicalReceiver/DicomExportService"
-				url="dicom://DestinationAET:ThisAET@ipaddress:port"
-				interval="5000" />
-			-->
 		</Pipeline>
 
 	</StandardPipelines>
