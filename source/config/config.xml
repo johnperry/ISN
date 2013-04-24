@@ -1,9 +1,9 @@
 <Configuration>
     <Server port="1080"
     	ssl="no"
-        keystore="keystore.jks"
+        keystore="${RSNA_ROOT}/conf/keystore.jks"
         keystorePassword="edge1234"
-        truststore="truststore.jks"
+        truststore="${RSNA_ROOT}/conf/truststore.jks"
         truststorePassword="edge1234"/>
     <Plugin
         name="ISN AuditLog"

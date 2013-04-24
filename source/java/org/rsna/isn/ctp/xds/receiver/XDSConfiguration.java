@@ -69,5 +69,8 @@ public class XDSConfiguration {
         homeCommunityID = element.getAttribute("homeCommunityID");
         imagesPerRequest= Integer.parseInt(element.getAttribute("imagesPerRequest"));
         axisTimeOut = StringUtil.getLong(element.getAttribute("timeout"), 120000);
+
+        File logs = new File("logs");
+        System.setProperty("xds-dump-dir", logs.getAbsolutePath());
     }
 }

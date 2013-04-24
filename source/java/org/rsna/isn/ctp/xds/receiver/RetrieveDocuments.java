@@ -157,7 +157,7 @@ public class RetrieveDocuments {
                             reportFiles.clear();
                         }
                     }
-                    logger.debug("Skipping previously downloaded submission set: "+submissionSetID);
+                    else logger.debug("Skipping previously downloaded submission set: "+submissionSetID);
                 }
             }
         } catch (Exception e) {

@@ -56,8 +56,18 @@ public class XDSReceiverServlet extends Servlet {
 		Path path = req.getParsedPath();
 		int length = path.length();
 
-		if (req.userHasRole("import")) {
+		if (!req.isFromAuthenticatedUser()) {
+			res.write("<h1>Authentication failed.</h1>");
+			res.send();
+			return;
+		}
+		if (!req.userHasRole("import")) {
+			res.write("<h1>User \""+req.getUser().getUsername()+"\" does not have the import privilege.</h1>");
+			res.send();
+			return;
+		}
 
+		else {
 			if (length == 1) {
 				//This is a request for the main page
 				res.write( getPage("", "", "", "", "", null) );
@@ -109,6 +119,7 @@ public class XDSReceiverServlet extends Servlet {
 			xdsImportService.getStudies(key, studies);
 			res.write( getPage(usertoken, dateofbirth, password, key,
 						"The download request has been queued.", null) );
+			logger.debug("Download request queued for hash: "+key);
 		}
 		res.setContentType("html");
 		res.send();

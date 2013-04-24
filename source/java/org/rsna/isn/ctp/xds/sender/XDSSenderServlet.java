@@ -55,8 +55,18 @@ public class XDSSenderServlet extends Servlet {
 		Path path = req.getParsedPath();
 		int length = path.length();
 
-		if (req.userHasRole("export")) {
+		if (!req.isFromAuthenticatedUser()) {
+			res.write("<h1>Authentication failed.</h1>");
+			res.send();
+			return;
+		}
+		if (!req.userHasRole("export")) {
+			res.write("<h1>User \""+req.getUser().getUsername()+"\" does not have the export privilege.</h1>");
+			res.send();
+			return;
+		}
 
+		else {
 			if (length == 1) {
 				if (req.getParameter("update", "").equals("SentStudiesTable")) {
 					//This is an AJAX request to update a part of the window

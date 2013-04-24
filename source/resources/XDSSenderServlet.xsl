@@ -2,6 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="yes" />
 
+<xsl:param name="isAuthenticated"/>
 <xsl:param name="context"/>
 <xsl:param name="sentStudies"/>
 <xsl:param name="destinations"/>
@@ -22,44 +23,44 @@
 			<h1>Send Studies to the RSNA Image Share</h1>
 
 			<div class="center">
-			<form id="formID" action="" method="POST" accept-charset="UTF-8" >
+				<form id="formID" action="" method="POST" accept-charset="UTF-8" >
 
-				<xsl:if test="Study">
-					<p>
-						Select a destination:
-						<select name="key">
-							<option value=""></option>
-							<xsl:for-each select="$destinations/Destinations/Destination">
-								<option value="{@key}"><xsl:value-of select="@name"/></option>
-							</xsl:for-each>
-							<option disabled="true">------</option>
-							<option value="0">Remove from List</option>
-						</select>
-					</p>
-					<center>
-					<p class="center">
-						<table border="1">
-							<xsl:call-template name="StudyHeadings"/>
-							<xsl:for-each select="Study">
-								<xsl:sort select="@patientID"/>
-								<tr>
-									<td class="center"><input type="checkbox" name="study" value="{@studyUID}"/></td>
-									<td><xsl:value-of select="@patientID"/></td>
-									<td><xsl:value-of select="@patientName"/></td>
-									<td title="UID: {@studyUID}"><xsl:value-of select="@studyDate"/></td>
-									<xsl:call-template name="Description"/>
-									<td class="right"><xsl:value-of select="@size"/></td>
-									<td class="center"><xsl:value-of select="@status"/></td>
-								</tr>
-							</xsl:for-each>
-						</table>
-					</p>
-					</center>
-					<p class="center">
-						<input type="submit" class="button" value="Send"/>
-					</p>
-				</xsl:if>
-			</form>
+					<xsl:if test="Study">
+						<p>
+							Select a destination:
+							<select name="key">
+								<option value=""></option>
+								<xsl:for-each select="$destinations/Destinations/Destination">
+									<option value="{@key}"><xsl:value-of select="@name"/></option>
+								</xsl:for-each>
+								<option disabled="true">------</option>
+								<option value="0">Remove from List</option>
+							</select>
+						</p>
+						<center>
+						<p class="center">
+							<table border="1">
+								<xsl:call-template name="StudyHeadings"/>
+								<xsl:for-each select="Study">
+									<xsl:sort select="@patientID"/>
+									<tr>
+										<td class="center"><input type="checkbox" name="study" value="{@studyUID}"/></td>
+										<td><xsl:value-of select="@patientID"/></td>
+										<td><xsl:value-of select="@patientName"/></td>
+										<td title="UID: {@studyUID}"><xsl:value-of select="@studyDate"/></td>
+										<xsl:call-template name="Description"/>
+										<td class="right"><xsl:value-of select="@size"/></td>
+										<td class="center"><xsl:value-of select="@status"/></td>
+									</tr>
+								</xsl:for-each>
+							</table>
+						</p>
+						</center>
+						<p class="center">
+							<input type="submit" class="button" value="Send"/>
+						</p>
+					</xsl:if>
+				</form>
 			</div>
 
 			<xsl:if test="not(Study)">
@@ -70,28 +71,29 @@
 				<hr/>
 				<h2>Sent Studies</h2>
 				<center>
-				<p class="center">
-					<table id="SentStudiesTable" border="1">
-						<xsl:call-template name="SentStudyHeadings"/>
-						<xsl:for-each select="$sentStudies/Studies/Study">
-							<xsl:sort select="@patientID"/>
-							<tr>
-								<td><xsl:value-of select="@patientID"/></td>
-								<td><xsl:value-of select="@patientName"/></td>
-								<td title="UID: {@studyUID}"><xsl:value-of select="@studyDate"/></td>
-								<xsl:call-template name="Description"/>
-								<td class="right"><xsl:value-of select="@size"/></td>
-								<td class="right"><xsl:value-of select="@objectsSent"/></td>
-								<xsl:call-template name="DestinationName"/>
-								<td class="center"><xsl:value-of select="@status"/></td>
-							</tr>
-						</xsl:for-each>
-					</table>
-				</p>
+					<p class="center">
+						<table id="SentStudiesTable" border="1">
+							<xsl:call-template name="SentStudyHeadings"/>
+							<xsl:for-each select="$sentStudies/Studies/Study">
+								<xsl:sort select="@patientID"/>
+								<tr>
+									<td><xsl:value-of select="@patientID"/></td>
+									<td><xsl:value-of select="@patientName"/></td>
+									<td title="UID: {@studyUID}"><xsl:value-of select="@studyDate"/></td>
+									<xsl:call-template name="Description"/>
+									<td class="right"><xsl:value-of select="@size"/></td>
+									<td class="right"><xsl:value-of select="@objectsSent"/></td>
+									<xsl:call-template name="DestinationName"/>
+									<td class="center"><xsl:value-of select="@status"/></td>
+								</tr>
+							</xsl:for-each>
+						</table>
+					</p>
 				</center>
 			</xsl:if>
 
 			<xsl:call-template name="footer"/>
+
 		</body>
 	</html>
 </xsl:template>
