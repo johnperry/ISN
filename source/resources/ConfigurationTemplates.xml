@@ -57,6 +57,9 @@
 			<attr name="minAge" required="no" default="300">
 				<helptext>Minimum age in seconds before a case is considered complete</helptext>
 			</attr>
+			<attr name="autosend" required="no" default="no" options="yes|no">
+				<helptext>Automatically send complete studies to the first destination</helptext>
+			</attr>
 			<attr name="iti8Pix" required="yes" default="mllps://clearinghouse.lifeimage.com:8888"/>
 			<attr name="iti8Reg" required="yes" default="mllps://clearinghouse.lifeimage.com:8890"/>
 			<attr name="iti41" required="yes" default="https://clearinghouse.lifeimage.com/services/xdsrepositoryb"/>

@@ -40,6 +40,8 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 	ObjectCache objectCache = null;
 	boolean deleteOnTransmission = true;
 	MonitorThread monitor = null;
+	boolean autosend = false;
+	String firstDestinationKey = null;
 
 	/**
 	 * Construct a CachingXDSExportService.
@@ -54,6 +56,7 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 
 		minAge = Math.max( StringUtil.getLong(element.getAttribute("minAge")), minAge ) * 1000;
 		deleteOnTransmission = !element.getAttribute("deleteOnTransmission").equals("no");
+		autosend = element.getAttribute("autosend").equals("yes");
 
 		//The objectCacheID is the id of a stage that holds the original (PHI) version of an object.
 		objectCacheID = element.getAttribute("objectCacheID").trim();
@@ -76,8 +79,10 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		destinations.clear();
 		NodeList nl = element.getElementsByTagName("Destination");
 		for (int i=0; i<nl.getLength(); i++) {
-			Element d = (Element)nl.item(i);
-			destinations.put( new Destination( d.getAttribute("key").trim(), d.getAttribute("name").trim() ) );
+			Element dEl = (Element)nl.item(i);
+			Destination d = new Destination( dEl.getAttribute("key").trim(), dEl.getAttribute("name").trim() );
+			destinations.put( d );
+			if (firstDestinationKey == null) firstDestinationKey = d.getKey();
 		}
 
 		//Initialize the SOAP configuration.
@@ -171,6 +176,9 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 				if (deleteOnTransmission) {
 					//Keep transmitted studies for 1 hour, just so the user can see that they went
 					studyCache.deleteTransmittedStudies(System.currentTimeMillis() - 60 * 60 * 1000);
+				}
+				if (autosend && (firstDestinationKey != null)) {
+					studyCache.sendCompleteStudies(firstDestinationKey);
 				}
 				try { Thread.sleep(minAge); }
 				catch (Exception ignore) { }

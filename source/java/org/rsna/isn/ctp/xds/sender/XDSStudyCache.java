@@ -126,7 +126,7 @@ public class XDSStudyCache {
 
 		//Note that if the phiObject is null (say, because the configuation
 		//is incorrect or because the stage is intentionally being used to
-		//export objects containing PHI), we use the anonymized values
+		//export objects containing PHI), we use the fileObject values
 		//in the database. This causes no problems for the program, but
 		//administrators should be warned that this can be a PHI leak.
 
@@ -272,6 +272,17 @@ public class XDSStudyCache {
 	}
 
 	/**
+	 * Enqueue all complete studies for transmission.
+	 * @param key the key identifying the destination.
+	 */
+	public void sendCompleteStudies(String key) {
+		XDSStudy[] studies = database.getStudies(XDSStudyStatus.COMPLETE);
+		for (XDSStudy study : studies) {
+			sendStudy(key, study.getStudyUID());
+		}
+	}
+
+	/**
 	 * Enqueue a study for transmission, changing its status to QUEUED.
 	 * @param key the key identifying the destination.
 	 * @param studyUID the UID of the study to be queued.
@@ -281,7 +292,7 @@ public class XDSStudyCache {
 		if (study != null) {
 			study.setDestination(key);
 			String destinationName = "";
-			try {  destinationName = Destinations.getInstance(context).get(key).getName(); }
+			try { destinationName = Destinations.getInstance(context).get(key).getName(); }
 			catch (Exception notThere) { }
 			study.setDestinationName(destinationName);
 			study.setStatus( XDSStudyStatus.QUEUED );
