@@ -93,6 +93,14 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 	}
 
 	/**
+	 * Get the size of the export queue.
+	 * @return the number of studies (not objects) in the export queue.
+	 */
+	public synchronized int getQueueSize() {
+		return studyCache.getStudyCount();
+	}
+
+	/**
 	 * Start the pipeline stage. This method is called by the pipeline
 	 * when it is started. At that time, the Configuration object has
 	 * been fully constructed, so it can be interrogated. Don't try to

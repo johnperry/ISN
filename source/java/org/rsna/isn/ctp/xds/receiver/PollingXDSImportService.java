@@ -85,6 +85,14 @@ public class PollingXDSImportService extends AbstractPipelineStage implements Im
 	}
 
 	/**
+	 * Get the size of the import queue.
+	 * @return the number of objects in the import queue.
+	 */
+	public synchronized int getQueueSize() {
+		return queueManager.size();
+	}
+
+	/**
 	 * Start the pipeline stage. This method is called by the pipeline
 	 * when it is started. At that time, the Configuration object has
 	 * been fully constructed, so it can be interrogated. Don't try to
