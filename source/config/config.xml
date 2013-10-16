@@ -1,10 +1,12 @@
 <Configuration>
     <Server port="1080"
-    	ssl="no"
-        keystore="${RSNA_ROOT}/conf/keystore.jks"
-        keystorePassword="edge1234"
-        truststore="${RSNA_ROOT}/conf/truststore.jks"
-        truststorePassword="edge1234"/>
+    	ssl="no">
+    	<SSL
+			keystore="${RSNA_HOME}/conf/keystore.jks"
+			keystorePassword="edge1234"
+			truststore="${RSNA_HOME}/conf/truststore.jks"
+			truststorePassword="edge1234"/>
+	</Server>
     <Plugin
         name="ISN AuditLog"
         id="AuditLog"
@@ -20,11 +22,6 @@
             quarantine="quarantines/Sender/DicomImportService"
             root="roots/Sender/DicomImportService"
             servletContext="export" />
-        <ObjectCache
-            name="ObjectCache-RS"
-            class="org.rsna.ctp.stdstages.ObjectCache"
-            id="ObjectCache-RS"
-            root="roots/Sender/ObjectCache-RS" />
         <DicomAnonymizer
             class="org.rsna.ctp.stdstages.DicomAnonymizer"
             lookupTable="scripts/lookup-table.properties"
@@ -78,18 +75,12 @@
             siteID="9652fef890fe9b5de17f2116e971f153d7d655c3b57fef6012a2138239e34d20"
             imagesPerRequest="100"
             timeout="120000" />
-        <ObjectLogger
-            name="ObjectLogger-RR"
-            class="org.rsna.ctp.stdstages.ObjectLogger"
-            interval="1"
-            verbose="yes" />
         <FileStorageService
             class="org.rsna.ctp.stdstages.FileStorageService"
             name="FileStorageService-RR"
             port="1086"
             quarantine="quarantines/ResearchReceiver/FileStorageService"
             root="roots/ResearchReceiver/FileStorageService"/>
-<!--
         <DicomExportService
             name="DicomExportService-RR"
             class="org.rsna.ctp.stdstages.DicomExportService"
@@ -97,7 +88,6 @@
             quarantine="quarantines/ResearchReceiver/DicomExportService"
             url="dicom://DestinationAET:ThisAET@ipaddress:port"
             interval="5000" />
--->
    </Pipeline>
     <Pipeline name="Clinical Receiver">
         <XDSImportService
@@ -114,18 +104,12 @@
             imagesPerRequest="100"
             timeout="120000"
             servletContext="xds-import" />
-        <ObjectLogger
-            name="ObjectLogger-CR"
-            class="org.rsna.ctp.stdstages.ObjectLogger"
-            interval="1"
-            verbose="yes" />
         <FileStorageService
             class="org.rsna.ctp.stdstages.FileStorageService"
             name="FileStorageService"
             port="1087"
             quarantine="quarantines/ClinicalReceiver/FileStorageService"
             root="roots/ClinicalReceiver/FileStorageService"/>
-<!--
         <DicomExportService
             name="DicomExportService-CR"
             class="org.rsna.ctp.stdstages.DicomExportService"
@@ -133,6 +117,5 @@
             quarantine="quarantines/ClinicalReceiver/DicomExportService"
             url="dicom://DestinationAET:ThisAET@ipaddress:port"
             interval="5000" />
--->
    </Pipeline>
 </Configuration>
