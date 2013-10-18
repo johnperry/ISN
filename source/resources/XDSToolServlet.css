@@ -1,0 +1,64 @@
+body {
+	padding:0;
+	margin:0;
+	border-style: none;
+}
+
+h1 {
+	margin-top: 12px;
+	margin-bottom: 5px;
+}
+
+p.center {
+	text-align: center;
+	font-size: small;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	margin-bottom: 15;
+	text-align: center;
+}
+
+p.center table {
+	margin: 0 auto;
+}
+
+td {
+	font-size: x-small;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	padding: 2 10 2 10;
+}
+
+.button {
+	padding: 5;
+	font-size: medium;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	color:#2977b9;
+	padding: 10 5 10 5;
+}
+
+div.tokens {
+	float:right;
+	width:90;
+	padding 10;
+	margin-top:10;
+	border:thin solid black;
+}
+
+div.tokens p.heading {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	text-align: center;
+	font-size: 10pt;
+	padding-top: 5px;
+	margin-top: 0;
+}
+
+div.tokens p.values {
+	font-family: monospace;
+	font-weight: bold;
+	text-align: center;
+}
+
+

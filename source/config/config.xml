@@ -2,9 +2,9 @@
     <Server port="1080"
     	ssl="no">
     	<SSL
-			keystore="${RSNA_HOME}/conf/keystore.jks"
+			keystore="${RSNA_ROOT}/conf/keystore.jks"
 			keystorePassword="edge1234"
-			truststore="${RSNA_HOME}/conf/truststore.jks"
+			truststore="${RSNA_ROOT}/conf/truststore.jks"
 			truststorePassword="edge1234"/>
 	</Server>
     <Plugin
@@ -19,21 +19,26 @@
             logConnections="rejected"
             name="DicomImportService"
             port="1081"
-            quarantine="quarantines/Sender/DicomImportService"
-            root="roots/Sender/DicomImportService"
+            quarantine="quarantines/ResearchSender/DicomImportService"
+            root="roots/ResearchSender/DicomImportService"
             servletContext="export" />
+        <ObjectCache
+            class="org.rsna.ctp.stdstages.ObjectCache"
+            id="ObjectCache-RS"
+            name="ObjectCache"
+            root="roots/ResearchSender/ObjectCache"/>
         <DicomAnonymizer
             class="org.rsna.ctp.stdstages.DicomAnonymizer"
             lookupTable="scripts/lookup-table.properties"
             name="DicomAnonymizer"
-            quarantine="quarantines/Sender/DicomAnonymizer"
-            root="roots/Sender/DicomAnonymizer"
+            quarantine="quarantines/ResearchSender/DicomAnonymizer"
+            root="roots/ResearchSender/DicomAnonymizer"
             script="scripts/Sender.script"/>
         <CachingXDSExportService
             servletContext="xds-export"
-            name="CachingXDSExportService-RS"
+            name="CachingXDSExportService"
             class="org.rsna.isn.ctp.xds.sender.CachingXDSExportService"
-            root="roots/Sender/CachingXDSExportService-RS"
+            root="roots/ResearchSender/CachingXDSExportService"
             objectCacheID="ObjectCache-RS"
             minAge="300"
             iti8Pix="mllps://clearinghouse.lifeimage.com:8888"
@@ -42,7 +47,7 @@
             iti41SrcId="1.3.6.1.4.1.19376.2.840.1.1.2.1"
             timeout="120000"
             auditLogID="AuditLog"
-            quarantine="quarantines/Sender/CachingXDSExportService-RS">
+            quarantine="quarantines/ResearchSender/CachingXDSExportService">
 
             <Destination
                 name="Trial S"
@@ -61,7 +66,7 @@
     </Pipeline>
     <Pipeline name="Research Receiver">
         <PollingXDSImportService
-            name="PollingXDSImportService-RR"
+            name="PollingXDSImportService"
             class="org.rsna.isn.ctp.xds.receiver.PollingXDSImportService"
             root="roots/ResearchReceiver/PollingXDSImportService"
             interval="60"
@@ -77,23 +82,23 @@
             timeout="120000" />
         <FileStorageService
             class="org.rsna.ctp.stdstages.FileStorageService"
-            name="FileStorageService-RR"
+            name="FileStorageService"
             port="1086"
             quarantine="quarantines/ResearchReceiver/FileStorageService"
             root="roots/ResearchReceiver/FileStorageService"/>
         <DicomExportService
-            name="DicomExportService-RR"
+            name="DicomExportService"
             class="org.rsna.ctp.stdstages.DicomExportService"
             root="roots/ResearchReceiver/DicomExportService"
             quarantine="quarantines/ResearchReceiver/DicomExportService"
-            url="dicom://DestinationAET:ThisAET@ipaddress:port"
+            url="dicom://DestinationAET:ThisAET@ipaddress:104"
             interval="5000" />
    </Pipeline>
     <Pipeline name="Clinical Receiver">
         <XDSImportService
-            name="XDSImportService-CR"
+            name="XDSImportService"
             class="org.rsna.isn.ctp.xds.receiver.XDSImportService"
-            root="roots/ClinicalReceiver/XDSImportService-CR"
+            root="roots/ClinicalReceiver/XDSImportService"
             rad69URL="https://clearinghouse.lifeimage.com/ImagingDocumentSource_Service?wsdl"
             registryURL="https://clearinghouse.lifeimage.com/services/xdsregistryb"
             repositoryURL="https://clearinghouse.lifeimage.com/services/xdsrepositoryb"
@@ -111,11 +116,11 @@
             quarantine="quarantines/ClinicalReceiver/FileStorageService"
             root="roots/ClinicalReceiver/FileStorageService"/>
         <DicomExportService
-            name="DicomExportService-CR"
+            name="DicomExportService"
             class="org.rsna.ctp.stdstages.DicomExportService"
             root="roots/ClinicalReceiver/DicomExportService"
             quarantine="quarantines/ClinicalReceiver/DicomExportService"
-            url="dicom://DestinationAET:ThisAET@ipaddress:port"
+            url="dicom://DestinationAET:ThisAET@ipaddress:104"
             interval="5000" />
    </Pipeline>
 </Configuration>
