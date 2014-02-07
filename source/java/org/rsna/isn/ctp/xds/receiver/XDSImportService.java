@@ -17,6 +17,7 @@ import org.rsna.ctp.objects.FileObject;
 import org.rsna.ctp.pipeline.AbstractPipelineStage;
 import org.rsna.ctp.pipeline.ImportService;
 import org.rsna.ctp.pipeline.QueueManager;
+import org.rsna.ctp.servlets.SummaryLink;
 import org.rsna.isn.ctp.ISNRoles;
 import org.rsna.isn.ctp.xds.sender.ihe.SOAPSetup;
 import org.rsna.server.HttpServer;
@@ -195,12 +196,15 @@ public class XDSImportService extends AbstractPipelineStage implements ImportSer
 			File tempDir = FileUtil.createTempDirectory(temp);
 			for (String s : studies) {
 				try {
+					logger.debug("Starting to download: "+s);
 					DocInfoResult result = docInfoTable.get( new Integer(s) );
 					RetrieveDocuments rd = new RetrieveDocuments(tempDir, docSetDB, result.getKey());
 					if (result != null) {
 						DocumentInfo info = result.getInfo();
 						rd.getStudy(info,queueManager);
 					}
+					else logger.debug("...result == null");
+					logger.debug("Finished downloading: "+s);
 				}
 				catch (Exception unable) {
 					logger.debug("Unable to download study: "+s, unable);
@@ -260,6 +264,21 @@ public class XDSImportService extends AbstractPipelineStage implements ImportSer
 				logger.warn("    file: "+file.getAbsolutePath());
 			}
 		}
+	}
+
+	/**
+	 * Get the array of links for display on the summary page.
+	 * @param userIsAdmin true if the requesting user has the admin role.
+	 * @return the array of links for display on the summary page.
+	 */
+	public SummaryLink[] getLinks(boolean userIsAdmin) {
+		if (!servletContext.equals("")) {
+			return new SummaryLink[] {
+				new SummaryLink("/"+servletContext, null, "Select Studies for Import", false),
+				new SummaryLink("/"+"isn-tool", null, "           Create Key           ", false)
+			};
+		}
+		else return new SummaryLink[0];
 	}
 
 	/**
