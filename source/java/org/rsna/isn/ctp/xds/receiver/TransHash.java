@@ -38,6 +38,8 @@ public class TransHash {
 
     public static String gen(String userToken, String dob, String password) throws Exception {
 
+		if (userToken.contains("@")) userToken = userToken.toLowerCase();
+
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(userToken.getBytes("UTF8"));
         md.update(dob.getBytes("UTF8"));
