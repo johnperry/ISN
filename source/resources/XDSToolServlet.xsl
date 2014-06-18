@@ -20,7 +20,7 @@
 
 			<xsl:if test="$tokens">
 				<div class="tokens">
-					<p class="heading">Random<br/><u>Tokens</u></p>
+					<p class="heading">Random<br/>Access<br/><u>Codes</u></p>
 					<p class="values"><xsl:value-of select="$tokens"/></p>
 				</div>
 			</xsl:if>
@@ -34,11 +34,11 @@
 				<p class="center">
 					<table border="1">
 						<tr>
-							<td>Token/Exam ID:</td>
+							<td>Access Code:</td>
 							<td><input name="usertoken" type="text"/></td>
 						</tr>
 						<tr>
-							<td>Password/PIN:</td>
+							<td>Password:</td>
 							<td><input name="password" type="text"/></td>
 						</tr>
 						<tr>
@@ -57,11 +57,11 @@
 					<p class="center">
 						<table border="1">
 							<tr>
-								<td>Token/Exam ID:</td>
+								<td>Access Code:</td>
 								<td><xsl:value-of select="$token"/></td>
 							</tr>
 							<tr>
-								<td>Password/PIN:</td>
+								<td>Password:</td>
 								<td><xsl:value-of select="$pw"/></td>
 							</tr>
 							<tr>

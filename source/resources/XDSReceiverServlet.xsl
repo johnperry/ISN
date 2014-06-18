@@ -30,11 +30,11 @@
 							<td>
 								<table border="1">
 									<tr>
-										<td>Token/Exam ID:</td>
+										<td>Access Code:</td>
 										<td><input name="usertoken" type="text" value=""/></td>
 									</tr>
 									<tr>
-										<td>Password/PIN:</td>
+										<td>Password:</td>
 										<td><input name="password" type="text" value=""/></td>
 									</tr>
 									<tr>
