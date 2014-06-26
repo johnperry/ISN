@@ -113,9 +113,6 @@ public class CachingXDSExportService extends AbstractPipelineStage implements Ex
 		//Get the ObjectCache stage so we can obtain PHI when necessary.
 		objectCache = (ObjectCache)config.getRegisteredStage(objectCacheID);
 
-		//Register this stage under the servlet context so the servlet can find it
-		config.registerStage(this);
-
 		//Install the servlet on the context
 		HttpServer server = config.getServer();
 		ServletSelector selector = server.getServletSelector();

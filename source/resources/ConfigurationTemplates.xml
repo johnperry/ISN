@@ -53,7 +53,7 @@
 			<attr name="name" required="yes" default="CachingXDSExportService-RS"/>
 			<attr name="class" required="yes" default="org.rsna.isn.ctp.xds.sender.CachingXDSExportService" editable="no"/>
 			<attr name="root" required="yes" default="roots/Sender/CachingXDSExportService-RS"/>
-			<attr name="objectCacheID" required="no" default="ObjectCache-RS">
+			<attr name="objectCacheID" required="no" default="">
 				<helptext>The ID of the ObjectCache stage from which to obtain PHI for display</helptext>
 			</attr>
 			<attr name="minAge" required="no" default="300">

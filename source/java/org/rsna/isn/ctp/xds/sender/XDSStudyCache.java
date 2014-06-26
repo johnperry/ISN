@@ -104,7 +104,7 @@ public class XDSStudyCache {
 
 	/**
 	 * Store an object in the cache, updating the database with
-	 * PHI obtained from a pre-anonymized version of the object.
+	 * PHI obtained from a non-anonymized version of the object.
 	 * @param fileObject the object to be stored
 	 * @param phiObject the object from which PHI is to be obtained
 	 * for storage in the database. If this parameter is null, the
@@ -137,7 +137,7 @@ public class XDSStudyCache {
 		studyDir.mkdirs();
 		String filename = fo.getSOPInstanceUID().replaceAll("[\\\\/\\s]", "_").trim();
 		File file = new File(studyDir, filename);
-		int inc = file.exists() ? 0 : 1;
+		//int inc = file.exists() ? 0 : 1;
 		FileUtil.copy(fileObject.getFile(), file);
 
 		//Now update the database so the servlet can track the study.
