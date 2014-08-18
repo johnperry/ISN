@@ -72,7 +72,8 @@ public class XDSToolServlet extends Servlet {
 	 */
 	public void doPost(HttpRequest req, HttpResponse res) throws Exception {
 
-		String usertoken = req.getParameter("usertoken", "usertoken").trim();
+		String deftoken = Long.toString( System.currentTimeMillis() );
+		String usertoken = req.getParameter("usertoken", deftoken).trim();
 		String dateofbirth = req.getParameter("dateofbirth", "19460201").trim();
 		String password = req.getParameter("password", "password").trim();
 
@@ -80,7 +81,13 @@ public class XDSToolServlet extends Servlet {
 
 		String key = TransHash.gen(usertoken, dateofbirth, password);
 
-		res.write( getPage(usertoken, dateofbirth, password, key) );
+		if (req.hasParameter("usertoken")) {
+			res.write( getPage(usertoken, dateofbirth, password, key) );
+		}
+		else {
+			res.write( getPage("", "", "", key) );
+		}
+
 		res.setContentType("html");
 		res.send();
 	}
@@ -117,19 +124,19 @@ public class XDSToolServlet extends Servlet {
 			Document doc = getSubmissionSetsDocument();
 			String xslPath = "/XDSToolServlet.xsl";
 			String[] params = {
-				"today", today,
-				"token", token,
-				"dob", dob,
-				"pw", pw,
-				"key", key,
-				"tokens", tokens.toString()
-			};
+					"today", today,
+					"token", token,
+					"dob", dob,
+					"pw", pw,
+					"key", key,
+					"tokens", tokens.toString()
+				};
 			Document xsl = XmlUtil.getDocument( FileUtil.getStream( xslPath ) );
 			return XmlUtil.getTransformedText( doc, xsl, params );
 		}
 		catch (Exception ex) {
 			logger.warn(ex);
-			return "Unable to create the receiver page.";
+			return "Unable to create the key tool page.";
 		}
 	}
 
