@@ -1,6 +1,9 @@
 <Configuration>
     <Server port="1080"
-    	ssl="no">
+    	ssl="no"
+    	usersClassName="org.rsna.server.UsersOpenAMImpl">
+    	<OpenAM 
+            openAMURL="${OPENAM_URL}" />
     	<SSL
 			keystore="${RSNA_ROOT}/conf/keystore.jks"
 			keystorePassword="edge1234"
