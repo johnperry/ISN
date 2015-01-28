@@ -23,8 +23,7 @@
             name="DicomImportService"
             port="1081"
             quarantine="quarantines/ResearchSender/DicomImportService"
-            root="roots/ResearchSender/DicomImportService"
-            servletContext="export" />
+            root="roots/ResearchSender/DicomImportService" />
         <ObjectCache
             class="org.rsna.ctp.stdstages.ObjectCache"
             id="ObjectCache-RS"

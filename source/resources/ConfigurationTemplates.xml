@@ -69,7 +69,7 @@
 			<attr name="timeout" required="yes" default="120000">
 				<helptext>Clearinghouse request timeout in milliseconds</helptext>
 			</attr>
-			<attr name="servletContext" required="yes" default="xds-import">
+			<attr name="servletContext" required="yes" default="xds-export">
 				<helptext>The context under which the research sender servlet is to be installed</helptext>
 			</attr>
 			<attr name="auditLogID" required="no" default=""/>
