@@ -107,6 +107,7 @@ public class ITI43 {
         if(documents.size() > 0) {
             document = (XDSDocument)documents.get(0);
 		}
+		else return null;
 
         File importDir = new File(downloadDIR);
 		File inputDir = null;
