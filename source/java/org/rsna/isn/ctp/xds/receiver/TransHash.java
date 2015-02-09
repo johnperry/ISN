@@ -26,26 +26,54 @@ package org.rsna.isn.ctp.xds.receiver;
 
 import java.security.MessageDigest;
 import java.math.BigInteger;
-
-/**
- * Generate SHA-256 hash code .
- *
- * @version @author
- * 1.0.0    Wendy Zhu
- *
- */
+import org.rsna.util.StringUtil;
+ 
 public class TransHash {
+    
+	public static String gen(String userEmail, String dateOfBirth, String accessCode) throws Exception {
+		
+		dateOfBirth = fixDate(dateOfBirth);
 
-    public static String gen(String userToken, String dob, String password) throws Exception {
+		MessageDigest md = MessageDigest.getInstance("SHA-256");
 
-		if (userToken.contains("@")) userToken = userToken.toLowerCase();
+		md.update(userEmail.toLowerCase().getBytes("UTF8"));
+		md.update(dateOfBirth.getBytes("UTF8"));
+		md.update(accessCode.toLowerCase().replaceAll("[^ybndrfg8ejkmcpqxot1uwisza345h769]","").getBytes("UTF8"));
 
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(userToken.getBytes("UTF8"));
-        md.update(dob.getBytes("UTF8"));
-        md.update(password.getBytes("UTF8"));
+		return String.format("%064x", (new BigInteger(1, md.digest())));
+	}
 
-		return String.valueOf(org.apache.commons.codec.binary.Hex.encodeHex(md.digest()));
-    }
+	public static String fixDate(String date) {
+		int y, m, d;
+		int x0, x1, x2;
+		
+		String[] x = date.split("[/\\.]");
+		
+		if (x.length == 3) {
+			x0 = StringUtil.getInt(x[0]);
+			x1 = StringUtil.getInt(x[1]);
+			x2 = StringUtil.getInt(x[2]);
+			
+			if (x0 > 1000) {
+				m = x1;
+				d = x2;
+				y = x0;
+			}
+			else {
+				if (x0 <= 12) {
+					m = x0;
+					d = x1;
+					y = x2;
+				}
+				else {
+					m = x0;
+					d = x1;
+					y = x2;
+				}					
+			}
+			date = String.format( "%04d%02d%02d", y, m, d);
+		}
+		return date;
+	}
 }
 

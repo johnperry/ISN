@@ -77,7 +77,7 @@ public class XDSToolServlet extends Servlet {
 		String dateofbirth = req.getParameter("dateofbirth", "19460201").trim();
 		String password = req.getParameter("password", "password").trim();
 
-		dateofbirth = fixDOB(dateofbirth);
+		dateofbirth = TransHash.fixDate(dateofbirth);
 
 		String key = TransHash.gen(usertoken, dateofbirth, password);
 
@@ -90,17 +90,6 @@ public class XDSToolServlet extends Servlet {
 
 		res.setContentType("html");
 		res.send();
-	}
-
-	private String fixDOB(String dob) {
-		String[] x = dob.split("/");
-		if (x.length == 3) {
-			int m = StringUtil.getInt(x[0]);
-			int d = StringUtil.getInt(x[1]);
-			int y = StringUtil.getInt(x[2]);
-			dob = String.format( "%04d%02d%02d", y, m, d);
-		}
-		return dob;
 	}
 
 	private String getPage(String token, String dob, String pw, String key) {
