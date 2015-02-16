@@ -2,6 +2,10 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="yes" />
 
+<xsl:param name="email"/>
+<xsl:param name="dateofbirth"/>
+<xsl:param name="accesscode"/>
+<xsl:param name="key"/>
 <xsl:param name="message"/>
 <xsl:param name="home">no</xsl:param>
 
@@ -10,15 +14,14 @@
 		<head>
 			<link rel="Stylesheet" type="text/css" media="all" href="/XDSServlet.css"></link>
 			<title>Retrieve Studies</title>
-			<script>
-				var message = "<xsl:value-of select="$message"/>";
-				function loaded() { if (message != "") alert(message); }
-				window.onload = loaded;
-			</script>
 		</head>
 		<body>
 			<xsl:call-template name="home"/>
 			<h1>Retrieve Studies from the RSNA Image Share</h1>
+			
+			<xsl:if test="$message">
+				<h2><xsl:value-of select="$message"/></h2>
+			</xsl:if>
 
 			<div class="center">
 			<form id="formID" action="" method="POST" accept-charset="UTF-8" >
@@ -29,17 +32,19 @@
 						<tr>
 							<td>
 								<table border="1">
+									<!--
 									<tr>
-										<td>Token:</td>
-										<td><input name="usertoken" type="text" value=""/></td>
+										<td>Email:</td>
+										<td><input name="email" type="text" value="{$email}"/></td>
+									</tr>
+									-->
+									<tr>
+										<td title="Date of Birth">DOB (YYYYMMDD):</td>
+										<td><input name="dateofbirth" type="text" value="{$dateofbirth}"/></td>
 									</tr>
 									<tr>
 										<td>Access Code:</td>
-										<td><input name="password" type="text" value=""/></td>
-									</tr>
-									<tr>
-										<td title="Date of Birth">DOB (YYYYMMDD):</td>
-										<td><input name="dateofbirth" type="text" value=""/></td>
+										<td><input name="accesscode" type="text" value="{$accesscode}"/></td>
 									</tr>
 								</table>
 							</td>

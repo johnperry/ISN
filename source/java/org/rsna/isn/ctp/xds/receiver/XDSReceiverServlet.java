@@ -90,10 +90,10 @@ public class XDSReceiverServlet extends Servlet {
 		//Only accept connections from users with the import privilege
 		if (!req.userHasRole("import")) { res.redirect("/"); return; }
 
-		String usertoken = req.getParameter("usertoken", "usertoken").trim();
+		String email = req.getParameter("email", "").trim();
 		String dateofbirth = req.getParameter("dateofbirth", "19460201").trim();
-		String password = req.getParameter("password", "password").trim();
-		String key = TransHash.gen(usertoken, dateofbirth, password);
+		String accesscode = req.getParameter("accesscode", "").trim();
+		String key = TransHash.gen(email, dateofbirth, accesscode);
 
 		Configuration config = Configuration.getInstance();
 		XDSImportService xdsImportService = (XDSImportService)config.getRegisteredStage(context);
@@ -104,20 +104,21 @@ public class XDSReceiverServlet extends Servlet {
 		else logger.debug("studies.size() == "+studies.size());
 
 		if ((studies == null) || (studies.size() == 0)) {
-			if (!usertoken.equals("")) {
+			if (!accesscode.equals("")) {
 				//This is a request for the list of studies
 				List<DocumentInfo> docInfoList = xdsImportService.getSubmissionSets(key);
-				res.write( getPage(usertoken, dateofbirth, password, key, "", docInfoList) );
+				String msg = (docInfoList.size() == 0) ? "No studies matched the specified parameters." : "";
+				res.write( getPage(email, dateofbirth, accesscode, key, msg, docInfoList) );
 			}
 			else {
-				//No token and no studies, just return the base page
+				//No accesscode and no studies, just return the base page
 				res.write( getPage("", "", "", "", "", null) );
 			}
 		}
 		else {
 			//This is a request to download the selected studies;
 			xdsImportService.getStudies(key, studies);
-			res.write( getPage(usertoken, dateofbirth, password, key,
+			res.write( getPage(email, dateofbirth, accesscode, key,
 						"The download request has been queued.", null) );
 			logger.debug("Download request queued for hash: "+key);
 		}
@@ -125,14 +126,14 @@ public class XDSReceiverServlet extends Servlet {
 		res.send();
 	}
 
-	private String getPage(String token, String dob, String pw, String key, String message, List<DocumentInfo> docInfoList) {
+	private String getPage(String email, String dateofbirth, String accesscode, String key, String message, List<DocumentInfo> docInfoList) {
 		try {
 			Document doc = getStudiesDocument(docInfoList);
 			String xslPath = "/XDSReceiverServlet.xsl";
 			Object[] params = {
-				"token", token,
-				"dob", dob,
-				"pw", pw,
+				"email", email,
+				"dateofbirth", dateofbirth,
+				"accesscode", accesscode,
 				"key", key,
 				"message", message
 			};

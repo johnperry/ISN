@@ -72,19 +72,19 @@ public class XDSToolServlet extends Servlet {
 	 */
 	public void doPost(HttpRequest req, HttpResponse res) throws Exception {
 
-		String deftoken = Long.toString( System.currentTimeMillis() );
-		String usertoken = req.getParameter("usertoken", deftoken).trim();
+		String email = req.getParameter("email", "").trim();
 		String dateofbirth = req.getParameter("dateofbirth", "19460201").trim();
-		String password = req.getParameter("password", "password").trim();
+		String accesscode = req.getParameter("accesscode", "").trim();
 
 		dateofbirth = TransHash.fixDate(dateofbirth);
 
-		String key = TransHash.gen(usertoken, dateofbirth, password);
-
-		if (req.hasParameter("usertoken")) {
-			res.write( getPage(usertoken, dateofbirth, password, key) );
+		if (req.hasParameter("accesscode")) {
+			String key = TransHash.gen(email, dateofbirth, accesscode);
+			res.write( getPage(email, dateofbirth, accesscode, key) );
 		}
 		else {
+			accesscode = Long.toString( System.currentTimeMillis() );
+			String key = TransHash.gen(email, dateofbirth, accesscode);
 			res.write( getPage("", "", "", key) );
 		}
 
@@ -92,7 +92,7 @@ public class XDSToolServlet extends Servlet {
 		res.send();
 	}
 
-	private String getPage(String token, String dob, String pw, String key) {
+	private String getPage(String email, String dateofbirth, String accesscode, String key) {
 		try {
 			//Get today's date
 			GregorianCalendar cal = new GregorianCalendar();
@@ -101,24 +101,15 @@ public class XDSToolServlet extends Servlet {
 											(cal.get(cal.MONTH)+1),
 											cal.get(cal.DAY_OF_MONTH) );
 
-			//Make some random tokens
-			StringBuffer tokens = new StringBuffer();
-			for (int i=0; i<25; i++) {
-				tokens.append(
-					org.apache.commons.lang.RandomStringUtils.random(6, "ybndrfg8ejkmcpqxotluwisza34h769")
-					+ " ");
-			}
-
 			//Make the page
 			Document doc = getSubmissionSetsDocument();
 			String xslPath = "/XDSToolServlet.xsl";
 			String[] params = {
 					"today", today,
-					"token", token,
-					"dob", dob,
-					"pw", pw,
-					"key", key,
-					"tokens", tokens.toString()
+					"email", email,
+					"dateofbirth", dateofbirth,
+					"accesscode", accesscode,
+					"key", key
 				};
 			Document xsl = XmlUtil.getDocument( FileUtil.getStream( xslPath ) );
 			return XmlUtil.getTransformedText( doc, xsl, params );
