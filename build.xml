@@ -1,6 +1,6 @@
 <project name="ISN" default="all" basedir=".">
 
-	<property name="version" value="R34"/>
+	<property name="version" value="R35"/>
 
 	<property name="build" value="${basedir}/build"/>
 	<property name="source" value="${basedir}/source"/>
