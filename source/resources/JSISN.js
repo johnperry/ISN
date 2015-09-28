@@ -40,6 +40,7 @@ function loaded() {
 	setVisibility("Export", isExport && hasExport);
 
 	if (isAdmin) {
+		setVisibility("UserManager", user.usersClassIsXMLFile);
 		setVisibility("ObjectTracker", ctpServer.hasStage("org.rsna.ctp.stdstages.ObjectTracker"));
 		setVisibility("IDMap", ctpServer.hasStage("org.rsna.ctp.stdstages.IDMap"));
 		setVisibility("DatabaseVerifier", ctpServer.hasStage("org.rsna.ctp.stdstages.DatabaseVerifier"));
