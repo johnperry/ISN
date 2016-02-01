@@ -44,7 +44,7 @@ public class DocSetDB {
 		try {
 			Long time = new Long( System.currentTimeMillis() );
 			index.put( id, time );
-                        recman.commit();
+            recman.commit();
 		}
 		catch (Exception ignore) { }
 	}
